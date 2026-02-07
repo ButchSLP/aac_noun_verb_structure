@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Fitzgerald Key: Interactive Assessment</title>
+    <title>AAC Noun + Verb Sentence Structure</title>
+    <script src="https://bernardo-castilho.github.io/DragDropTouch/DragDropTouch.js"></script>
     <style>
         html, body { 
             height: 100%; 
@@ -11,6 +12,8 @@
             overflow: hidden; 
             background: #f0f2f5;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            /* Prevents the screen from bouncing/scrolling while dragging */
+            touch-action: none; 
         }
 
         body { 
@@ -23,7 +26,6 @@
             position: relative;
         }
 
-        /* Fullscreen Button */
         #fullscreen-btn {
             position: absolute;
             top: 10px;
@@ -36,7 +38,6 @@
             z-index: 100;
         }
 
-        /* Container Styles */
         #game-container, #result-screen { 
             width: 95%;
             max-width: 900px; 
@@ -81,7 +82,6 @@
             object-fit: contain; 
         }
 
-        /* Drop Zones */
         #drop-zone { 
             flex-shrink: 0;
             display: flex; 
@@ -109,15 +109,14 @@
             min-height: 150px;
         }
 
-        /* Symbols */
         .symbol { 
             padding: 10px; 
             border-radius: 12px; 
             cursor: grab; 
             font-weight: bold; 
-            width: 160px; 
-            min-height: 140px; 
-            font-size: 1.1rem; 
+            width: 140px; 
+            min-height: 120px; 
+            font-size: 1rem; 
             box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
             text-align: center;
             display: flex;
@@ -125,11 +124,14 @@
             align-items: center;
             justify-content: center;
             box-sizing: border-box;
+            /* Essential for mobile interaction */
+            user-select: none;
+            -webkit-user-drag: element;
         }
 
         .symbol img {
-            width: 80px;
-            height: 80px;
+            width: 60px;
+            height: 60px;
             object-fit: contain;
             margin-bottom: 8px;
             pointer-events: none; 
@@ -139,7 +141,6 @@
         .doing { background: #E0E0E0; border: 4px solid #2ECC71; } 
         .dragging { opacity: 0.3; }
 
-        /* Buttons */
         button { 
             flex-shrink: 0;
             padding: 12px 35px; 
@@ -162,31 +163,15 @@
             height: 25px; 
         }
 
-        /* Results Screen Items */
-        #log-container {
-            flex-grow: 1;
-            overflow-y: auto;
-            margin-top: 10px;
-        }
-
-        table { width: 100%; border-collapse: collapse; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 0.95rem; }
-        th { background-color: #f2f2f2; position: sticky; top: 0; }
-        
-        .pass { color: #27ae60; font-weight: bold; }
-        .fail { color: #e74c3c; font-weight: bold; }
-        .hidden { display: none !important; }
-
-        /* NEW: Celebration Overlay Styles */
         #celebration-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.95);
             z-index: 2000;
-            display: none; /* Hidden by default */
+            display: none; 
             flex-direction: column;
             align-items: center;
             justify-content: center;
@@ -197,22 +182,28 @@
             max-width: 80%;
             max-height: 60%;
             border-radius: 20px;
-            box-shadow: 0 0 30px rgba(0,0,0,0.2);
         }
 
         .celebration-text {
-            font-size: 3rem;
+            font-size: 2.5rem;
             color: #2ecc71;
             font-weight: bold;
-            margin-top: 20px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
         }
 
-        :fullscreen body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
+        #log-container {
+            flex-grow: 1;
+            overflow-y: auto;
+            margin-top: 10px;
         }
+
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 0.9rem; }
+        th { background-color: #f2f2f2; position: sticky; top: 0; }
+        
+        .pass { color: #27ae60; font-weight: bold; }
+        .fail { color: #e74c3c; font-weight: bold; }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
@@ -245,24 +236,19 @@
     <div id="result-screen" class="hidden">
         <h1 style="margin: 0; color: #2c3e50; font-size: 1.5rem;">Results Summary</h1>
         <div style="font-size: 3rem; color: #3498db;" id="final-pct">0%</div>
-        
         <div id="log-container">
             <table>
                 <thead>
-                    <tr>
-                        <th>Trial</th>
-                        <th>Target Sentence</th>
-                        <th>Result</th>
-                    </tr>
+                    <tr><th>Trial</th><th>Sentence</th><th>Result</th></tr>
                 </thead>
                 <tbody id="log-body"></tbody>
             </table>
         </div>
-
         <button onclick="location.reload()" style="background:#34495e; color:white; margin-top: 10px;">Restart</button>
     </div>
 
     <script>
+        // Fullscreen remains same
         function toggleFullScreen() {
             if (!document.fullscreenElement) {
                 document.documentElement.requestFullscreen();
@@ -274,76 +260,16 @@
         }
 
         const trialsData = [
-             { 
-                gif: "images/dog_smelling.gif", 
-                correctWho: "The dog", whoImg: "symbols/dog.png", 
-                correctDoing: "is smelling", doingImg: "symbols/smell.png",
-                distWho: "The cat", distWhoImg: "symbols/cat.png",
-                distDoing: "is sleeping", distDoingImg: "symbols/sleep.png"
-            },
-            { 
-                gif: "images/girl_running.gif", 
-                correctWho: "The girl", whoImg: "symbols/girl.png", 
-                correctDoing: "is running", doingImg: "symbols/run.png",
-                distWho: "The boy", distWhoImg: "symbols/boy.png",
-                distDoing: "is eating", distDoingImg: "symbols/eat.png"
-            },
-            { 
-                gif: "images/cat_jumping.gif", 
-                correctWho: "The cat", whoImg: "symbols/cat.png", 
-                correctDoing: "is jumping", doingImg: "symbols/jump.png",
-                distWho: "The bird", distWhoImg: "symbols/bird.png",
-                distDoing: "is flying", distDoingImg: "symbols/fly.png"
-            },
-            { 
-                gif: "images/boy_eating.gif", 
-                correctWho: "The boy", whoImg: "symbols/boy.png", 
-                correctDoing: "is eating", doingImg: "symbols/eat.png",
-                distWho: "The teacher", distWhoImg: "symbols/teacher.png",
-                distDoing: "is writing", distDoingImg: "symbols/write.png"
-            },
-            { 
-                gif: "images/baby_crying.gif", 
-                correctWho: "The baby", whoImg: "symbols/baby.png", 
-                correctDoing: "is crying", doingImg: "symbols/cry.png",
-                distWho: "The man", distWhoImg: "symbols/man.png",
-                distDoing: "is washing", distDoingImg: "symbols/wash.png"
-            },
-            { 
-                gif: "images/bird_flying.gif", 
-                correctWho: "The bird", whoImg: "symbols/bird.png", 
-                correctDoing: "is flying", doingImg: "symbols/fly.png",
-                distWho: "The dog", distWhoImg: "symbols/dog.png",
-                distDoing: "is talking", distDoingImg: "symbols/talk.png"
-            },
-            { 
-                gif: "images/fish_looking.gif", 
-                correctWho: "The fish", whoImg: "symbols/fish.png", 
-                correctDoing: "is looking", doingImg: "symbols/look.png",
-                distWho: "The octopus", distWhoImg: "symbols/octopus.png",
-                distDoing: "is dancing", distDoingImg: "symbols/dance.png"
-            },
-            { 
-                gif: "images/man_cutting.gif", 
-                correctWho: "The man", whoImg: "symbols/man.png", 
-                correctDoing: "is cutting", doingImg: "symbols/cut.png",
-                distWho: "The woman", distWhoImg: "symbols/woman.png",
-                distDoing: "is holding", distDoingImg: "symbols/hold.png"
-            },
-            { 
-                gif: "images/man_washing.gif", 
-                correctWho: "The man", whoImg: "symbols/man.png", 
-                correctDoing: "is washing", doingImg: "symbols/wash.png",
-                distWho: "The baby", distWhoImg: "symbols/baby.png",
-                distDoing: "is crying", distDoingImg: "symbols/cry.png"
-            },
-            { 
-                gif: "images/girl_reading.gif", 
-                correctWho: "The girl", whoImg: "symbols/girl.png", 
-                correctDoing: "is reading", doingImg: "symbols/read.png",
-                distWho: "The cat", distWhoImg: "symbols/cat.png",
-                distDoing: "is flying", distDoingImg: "symbols/fly.png"
-            }
+             { gif: "images/dog_smelling.gif", correctWho: "The dog", whoImg: "symbols/dog.png", correctDoing: "is smelling", doingImg: "symbols/smell.png", distWho: "The cat", distWhoImg: "symbols/cat.png", distDoing: "is sleeping", distDoingImg: "symbols/sleep.png" },
+             { gif: "images/girl_running.gif", correctWho: "The girl", whoImg: "symbols/girl.png", correctDoing: "is running", doingImg: "symbols/run.png", distWho: "The boy", distWhoImg: "symbols/boy.png", distDoing: "is eating", distDoingImg: "symbols/eat.png" },
+             { gif: "images/cat_jumping.gif", correctWho: "The cat", whoImg: "symbols/cat.png", correctDoing: "is jumping", doingImg: "symbols/jump.png", distWho: "The bird", distWhoImg: "symbols/bird.png", distDoing: "is flying", distDoingImg: "symbols/fly.png" },
+             { gif: "images/boy_eating.gif", correctWho: "The boy", whoImg: "symbols/boy.png", correctDoing: "is eating", doingImg: "symbols/eat.png", distWho: "The teacher", distWhoImg: "symbols/teacher.png", distDoing: "is writing", distDoingImg: "symbols/write.png" },
+             { gif: "images/baby_crying.gif", correctWho: "The baby", whoImg: "symbols/baby.png", correctDoing: "is crying", doingImg: "symbols/cry.png", distWho: "The man", distWhoImg: "symbols/man.png", distDoing: "is washing", distDoingImg: "symbols/wash.png" },
+             { gif: "images/bird_flying.gif", correctWho: "The bird", whoImg: "symbols/bird.png", correctDoing: "is flying", doingImg: "symbols/fly.png", distWho: "The dog", distWhoImg: "symbols/dog.png", distDoing: "is talking", distDoingImg: "symbols/talk.png" },
+             { gif: "images/fish_looking.gif", correctWho: "The fish", whoImg: "symbols/fish.png", correctDoing: "is looking", doingImg: "symbols/look.png", distWho: "The octopus", distWhoImg: "symbols/octopus.png", distDoing: "is dancing", distDoingImg: "symbols/dance.png" },
+             { gif: "images/man_cutting.gif", correctWho: "The man", whoImg: "symbols/man.png", correctDoing: "is cutting", doingImg: "symbols/cut.png", distWho: "The woman", distWhoImg: "symbols/woman.png", distDoing: "is holding", distDoingImg: "symbols/hold.png" },
+             { gif: "images/man_washing.gif", correctWho: "The man", whoImg: "symbols/man.png", correctDoing: "is washing", doingImg: "symbols/wash.png", distWho: "The baby", distWhoImg: "symbols/baby.png", distDoing: "is crying", distDoingImg: "symbols/cry.png" },
+             { gif: "images/girl_reading.gif", correctWho: "The girl", whoImg: "symbols/girl.png", correctDoing: "is reading", doingImg: "symbols/read.png", distWho: "The cat", distWhoImg: "symbols/cat.png", distDoing: "is flying", distDoingImg: "symbols/fly.png" }
         ];
 
         let currentIndex = 0;
@@ -390,6 +316,7 @@
             });
         }
 
+        // Two-way drag zones
         const dropZone = document.getElementById('drop-zone');
         const wordBank = document.getElementById('word-bank');
 
@@ -409,7 +336,7 @@
             const trial = trialsData[currentIndex];
 
             if (placed.length < 2) {
-                document.getElementById('feedback').innerText = "Drag both parts to the top box!";
+                document.getElementById('feedback').innerText = "Drag both parts!";
                 return;
             }
 
@@ -459,12 +386,9 @@
                 logBody.innerHTML += row;
             });
 
-            // Trigger celebration GIF if score is 80% or better
             if (score >= 8) {
                 const overlay = document.getElementById('celebration-overlay');
                 overlay.style.display = 'flex';
-                
-                // Automatically hide celebration after 5 seconds
                 setTimeout(() => {
                     overlay.style.opacity = '0';
                     overlay.style.transition = 'opacity 1s';

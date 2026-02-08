@@ -2,206 +2,98 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>AAC Noun + Verb - Audio Updated</title>
+    <title>AAC Noun + Verb - Side-by-Side View</title>
     <script src="https://bernardo-castilho.github.io/DragDropTouch/DragDropTouch.js"></script>
     <style>
         html, body { 
-		height: 100%;
-		margin: 0;
-		padding: 0;
-		overflow: hidden;
-		background: #f0f2f5;
-		font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-		touch-action: none;
-	}
+            height: 100%; margin: 0; padding: 0; overflow: hidden; 
+            background: #f0f2f5; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            touch-action: none; 
+        }
 
-        body {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		padding: 10px;
-		box-sizing: border-box;
-		position: relative;
-	}
+        body { display: flex; align-items: center; justify-content: center; padding: 10px; box-sizing: border-box; }
 
-        #fullscreen-btn {
-		position: absolute;
-		top: 10px;
-		right: 10px;
-		padding: 8px 15px;
-		font-size: 0.8rem;
-		background: #34495e;
-		color: white;
-		border-radius: 5px;
-		z-index: 100;
-	}
+        #fullscreen-btn { position: absolute; top: 10px; right: 10px; padding: 8px 15px; font-size: 0.8rem; background: #34495e; color: white; border-radius: 5px; z-index: 100; cursor: pointer; }
 
-        #game-container, #result-screen {
-		width: 95%;
-		max-width: 900px;
-		height: 92vh;
-		background: white;
-		padding: 20px;
-		border-radius: 20px;
-		box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-		display: flex;
-		flex-direction: column;
-		box-sizing: border-box;
-		position: relative;
-	}
+        /* Containers */
+        #game-container, #result-screen { 
+            width: 98%; max-width: 1200px; height: 92vh; 
+            background: white; padding: 20px; border-radius: 20px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1); display: flex; flex-direction: column; 
+            box-sizing: border-box; position: relative; 
+        }
 
-        #stats-header {
-		display: flex;
-		justify-content: space-between;
-		margin-bottom: 10px;
-		font-weight: bold;
-		background: #f8f9fa;
-		padding: 10px;
-		border-radius: 10px;
-		flex-shrink: 0;
-	}
+        #stats-header { display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: bold; background: #f8f9fa; padding: 10px; border-radius: 10px; flex-shrink: 0; }
 
-        #gif-container {
-		flex-grow: 1;
-		background: #eee;
-		border-radius: 15px;
-		margin-bottom: 10px;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		border: 2px solid #ddd;
-		overflow: hidden;
-		min-height: 0;
-	}
+        /* THE SPLIT LAYOUT */
+        #main-content {
+            display: flex; flex-direction: row; gap: 20px; flex-grow: 1; min-height: 0;
+        }
 
-        #trial-gif {
-		max-width: 100%;
-		max-height: 100%;
-		object-fit: contain;
-	}
+        /* Large GIF on the Left */
+        #gif-container { 
+            flex: 1.2; background: #eee; border-radius: 15px; 
+            display: flex; align-items: center; justify-content: center; 
+            border: 2px solid #ddd; overflow: hidden; 
+        }
+        #trial-gif { max-width: 100%; max-height: 100%; object-fit: contain; }
 
-        #drop-zone {
-		flex-shrink: 0;
-		display: flex;
-		gap: 15px;
-		padding: 15px;
-		background: #fff;
-		border: 3px dashed #3498db;
-		min-height: 155px;
-		margin-bottom: 10px;
-		border-radius: 15px;
-		justify-content: center;
-		align-items: center;
-	}
+        /* Workspace on the Right */
+        #workspace { flex: 1; display: flex; flex-direction: column; gap: 10px; min-width: 320px; }
 
-        .bank {
-		flex-shrink: 0;
-		display: flex;
-		gap: 12px;
-		justify-content: center;
-		flex-wrap: wrap;
-		padding: 15px;
-		background: #f9f9f9;
-		border-radius: 10px;
-		border: 2px solid #eee;
-		min-height: 150px;
-	}
+        #drop-zone { 
+            flex-shrink: 0; display: flex; gap: 10px; padding: 15px; 
+            background: #fff; border: 3px dashed #3498db; min-height: 140px; 
+            border-radius: 15px; justify-content: center; align-items: center; 
+        }
 
-        .symbol {
-		padding: 10px;
- 		border-radius: 12px;
-		cursor: grab;
-		font-weight: bold;
-		width: 140px;
-		min-height: 120px;
-		font-size: 1rem;
-		box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-		text-align: center;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		box-sizing: border-box;
-		/* Essential for mobile interaction */
-		user-select: none;
-		-webkit-user-drag: element;
-	}
+        .bank { 
+            flex-grow: 1; display: flex; gap: 10px; justify-content: center; 
+            align-content: center; flex-wrap: wrap; padding: 15px; 
+            background: #f9f9f9; border-radius: 10px; border: 2px solid #eee; 
+        }
 
-        .symbol img {
-		width: 60px;
-		height: 60px;
-		object-fit: contain;
-		margin-bottom: 8px;
-		pointer-events: none;
-	}
+        /* Symbol Buttons */
+        .symbol { 
+            padding: 8px; border-radius: 12px; cursor: grab; font-weight: bold; 
+            width: 135px; min-height: 120px; font-size: 0.95rem; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            box-sizing: border-box; user-select: none;
+        }
+        .symbol img { width: 65px; height: 65px; object-fit: contain; margin-bottom: 5px; pointer-events: none; }
 
         .who { background: #E0E0E0; border: 4px solid #FFFF00; } 
         .doing { background: #E0E0E0; border: 4px solid #2ECC71; } 
         .dragging { opacity: 0.3; }
 
-        button {
-		flex-shrink: 0;
-		padding: 12px 35px;
-		font-size: 1rem;
-		cursor: pointer;
-		border-radius: 50px;
-		border: none;
-		font-weight: bold;
-		transition: 0.3s;
-	}
+        /* Feedback & Buttons */
+        #feedback { font-weight: bold; font-size: 1.2rem; height: 30px; text-align: center; }
+        .action-area { display: flex; justify-content: center; padding-top: 5px; }
+        button { padding: 12px 30px; font-size: 1rem; cursor: pointer; border-radius: 50px; border: none; font-weight: bold; transition: 0.3s; }
+        #check-btn { background: #3498db; color: white; }
+        #next-btn { background: #2ecc71; color: white; display: none; }
 
-        #check-btn { background: #3498db; color: white; margin-top: 5px; }
-        #next-btn { background: #2ecc71; color: white; display: none; margin: 5px auto; }
+        /* Celebration */
+        #celebration-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.95); z-index: 2000; display: none; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; }
+        #celebration-gif { max-width: 70%; max-height: 60%; border-radius: 20px; }
+        .celebration-text { font-size: 2.5rem; color: #2ecc71; font-weight: bold; margin-bottom: 20px; }
 
-        #feedback {
-		flex-shrink: 0;
-		margin-top: 5px;
-		font-weight: bold;
-		font-size: 1.2rem; height: 25px;
-	}
-
-        #celebration-overlay {
-		position: fixed;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 100%;
-		background: rgba(255, 255, 255, 0.95);
-		z-index: 2000;
-		display: none;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		text-align: center; pointer-events: none;
-	}
-
-        #celebration-gif {
-		max-width: 80%;
-		max-height: 60%;
-		border-radius: 20px;
-	}
-
-        .celebration-text {
-		font-size: 2.5rem;
-		color: #2ecc71;
-		font-weight: bold;
-		margin-bottom: 20px;
-	}
-
-        #log-container {
-		flex-grow: 1;
-		overflow-y: auto;
-		margin-top: 10px;
-	 }
-
+        /* Results Screen */
+        #log-container { flex-grow: 1; overflow-y: auto; margin-top: 10px; }
         table { width: 100%; border-collapse: collapse; }
         th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 0.9rem; }
         th { background-color: #f2f2f2; position: sticky; top: 0; }
-
         .pass { color: #27ae60; font-weight: bold; }
         .fail { color: #e74c3c; font-weight: bold; }
         .hidden { display: none !important; }
+
+        /* Mobile Responsive View */
+        @media (max-width: 850px) {
+            #main-content { flex-direction: column; }
+            #gif-container { flex: none; height: 250px; }
+            #game-container { height: 98vh; }
+        }
     </style>
 </head>
 <body>
@@ -218,12 +110,22 @@
             <span>Trial: <span id="current-trial">1</span> / 10</span>
             <span>Score: <span id="score-val">0</span></span>
         </div>
-        <div id="gif-container"><img id="trial-gif" src="" alt="Loading GIF..."></div>
-        <div id="drop-zone"></div>
-        <div class="bank" id="word-bank"></div>
-        <div id="feedback"></div>
-        <button id="check-btn" onclick="checkAnswer()">Check Answer</button>
-        <button id="next-btn" onclick="nextTrial()">Next Trial &rarr;</button>
+
+        <div id="main-content">
+            <div id="gif-container">
+                <img id="trial-gif" src="" alt="Loading GIF...">
+            </div>
+
+            <div id="workspace">
+                <div id="drop-zone"></div>
+                <div class="bank" id="word-bank"></div>
+                <div id="feedback"></div>
+                <div class="action-area">
+                    <button id="check-btn" onclick="checkAnswer()">Check Answer</button>
+                    <button id="next-btn" onclick="nextTrial()">Next Trial &rarr;</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div id="result-screen" class="hidden">
@@ -239,17 +141,13 @@
     </div>
 
     <script>
-        // --- AUDIO PRE-LOADING ---
+        // --- AUDIO ---
         const dropSound = new Audio('sounds/drop.mp3');
-        dropSound.volume = 0.3; // Volume set to 30% (softer)
+        dropSound.volume = 0.2; // Softer volume
 
         const celebrationSong = new Audio('sounds/celebration_song.mp3');
 
-        function toggleFullScreen() {
-            if (!document.fullscreenElement) { document.documentElement.requestFullscreen(); document.getElementById('fullscreen-btn').innerText = "Exit Full Screen"; } 
-            else { document.exitFullscreen(); document.getElementById('fullscreen-btn').innerText = "⛶ Full Screen"; }
-        }
-
+        // --- GAME DATA ---
         const trialsData = [
              { gif: "images/dog_smelling.gif", correctWho: "The dog", whoImg: "symbols/dog.png", correctDoing: "is smelling", doingImg: "symbols/smell.png", distWho: "The cat", distWhoImg: "symbols/cat.png", distDoing: "is sleeping", distDoingImg: "symbols/sleep.png" },
              { gif: "images/girl_running.gif", correctWho: "The girl", whoImg: "symbols/girl.png", correctDoing: "is running", doingImg: "symbols/run.png", distWho: "The boy", distWhoImg: "symbols/boy.png", distDoing: "is eating", distDoingImg: "symbols/eat.png" },
@@ -263,9 +161,12 @@
              { gif: "images/girl_reading.gif", correctWho: "The girl", whoImg: "symbols/girl.png", correctDoing: "is reading", doingImg: "symbols/read.png", distWho: "The cat", distWhoImg: "symbols/cat.png", distDoing: "is flying", distDoingImg: "symbols/fly.png" }
         ];
 
-        let currentIndex = 0;
-        let score = 0;
-        let trialLog = [];
+        let currentIndex = 0, score = 0, trialLog = [];
+
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) { document.documentElement.requestFullscreen(); } 
+            else { document.exitFullscreen(); }
+        }
 
         function loadTrial() {
             const trial = trialsData[currentIndex];
@@ -284,12 +185,7 @@
                 div.draggable = true;
                 div.dataset.type = item.type;
                 div.dataset.text = item.text;
-                const img = document.createElement('img');
-                img.src = item.img;
-                div.appendChild(img);
-                const textNode = document.createElement('span');
-                textNode.innerText = item.text;
-                div.appendChild(textNode);
+                div.innerHTML = `<img src="${item.img}"><span>${item.text}</span>`;
                 div.addEventListener('dragstart', (e) => e.target.classList.add('dragging'));
                 div.addEventListener('dragend', (e) => e.target.classList.remove('dragging'));
                 bank.appendChild(div);
@@ -298,7 +194,6 @@
 
         const dropZone = document.getElementById('drop-zone');
         const wordBank = document.getElementById('word-bank');
-
         [dropZone, wordBank].forEach(zone => {
             zone.addEventListener('dragover', e => e.preventDefault());
             zone.addEventListener('drop', e => {
@@ -306,10 +201,7 @@
                 if (dragging) {
                     zone.appendChild(dragging);
                     dragging.classList.remove('dragging');
-                    if(zone.id === "drop-zone") {
-                        dropSound.currentTime = 0; 
-                        dropSound.play();
-                    }
+                    if(zone.id === "drop-zone") { dropSound.currentTime = 0; dropSound.play(); }
                 }
             });
         });
@@ -326,38 +218,27 @@
             document.getElementById('next-btn').style.display = "inline-block";
         }
 
-        function nextTrial() { currentIndex++; if (currentIndex < 10) { loadTrial(); } else { showResults(); } }
+        function nextTrial() { currentIndex++; if (currentIndex < 10) loadTrial(); else showResults(); }
 
         function showResults() {
             document.getElementById('game-container').classList.add('hidden');
             document.getElementById('result-screen').classList.remove('hidden');
             document.getElementById('final-pct').innerText = (score / 10 * 100) + "%";
-            
             const logBody = document.getElementById('log-body');
             trialLog.forEach(item => {
-                const row = `<tr><td>${item.trialNum}</td><td>${item.sentence}</td><td class="${item.status.toLowerCase()}">${item.status}</td></tr>`;
-                logBody.innerHTML += row;
+                logBody.innerHTML += `<tr><td>${item.trialNum}</td><td>${item.sentence}</td><td class="${item.status.toLowerCase()}">${item.status}</td></tr>`;
             });
-
             if (score >= 8) {
                 const overlay = document.getElementById('celebration-overlay');
                 overlay.style.display = 'flex';
-                
-                // Celebration song starts and stays playing
-                celebrationSong.currentTime = 0;
                 celebrationSong.play();
-
                 setTimeout(() => {
                     overlay.style.opacity = '0';
                     overlay.style.transition = 'opacity 1s';
-                    setTimeout(() => { 
-                        overlay.style.display = 'none'; 
-                        // Note: celebrationSong.pause() is removed so it continues playing
-                    }, 1000);
+                    setTimeout(() => overlay.style.display = 'none', 1000);
                 }, 5000);
             }
         }
-
         loadTrial();
     </script>
 </body>

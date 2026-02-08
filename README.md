@@ -1,1 +1,1 @@
-This is a project for mainly speech therapists to use with students who use AAC.
+This is a project for mainly speech therapists to use with students who use AAC.  The idea is that students will learn noun + verb sentence strucure while also modeling and reinforcing use of AAC symbols for students who use speech generating devices.

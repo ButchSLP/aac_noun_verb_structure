@@ -2,10 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>AAC Noun + Verb - iPad Audio Fix</title>
+    <title>AAC Noun + Verb - iPad Pro Audio</title>
     <script src="https://bernardo-castilho.github.io/DragDropTouch/DragDropTouch.js"></script>
     <style>
-        /* All your existing Side-by-Side styles remain the same */
+        /* Styles remain identical to your current Side-by-Side layout */
         html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; background: #f0f2f5; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; touch-action: none; }
         body { display: flex; align-items: center; justify-content: center; padding: 10px; box-sizing: border-box; }
         #fullscreen-btn { position: absolute; top: 10px; right: 10px; padding: 8px 15px; font-size: 0.8rem; background: #34495e; color: white; border-radius: 5px; z-index: 100; cursor: pointer; }
@@ -38,13 +38,9 @@
         .fail { color: #e74c3c; font-weight: bold; }
         .hidden { display: none !important; }
 
-        /* The Audio Unlocker Splash */
-        #audio-unlock-overlay {
-            position: fixed; top:0; left:0; width:100%; height:100%;
-            background: #3498db; color: white; z-index: 3000;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-        }
-
+        /* Splash Screen */
+        #audio-unlock-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: #3498db; color: white; z-index: 3000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        
         @media (max-width: 850px) { #main-content { flex-direction: column; } #gif-container { flex: none; height: 250px; } #game-container { height: 98vh; } }
     </style>
 </head>
@@ -52,6 +48,7 @@
 
     <div id="audio-unlock-overlay">
         <h1>AAC Noun + Verb</h1>
+        <p>Ready to play?</p>
         <button onclick="startApp()" style="background: white; color: #3498db; font-size: 1.5rem;">Tap to Start</button>
     </div>
 
@@ -94,29 +91,35 @@
     </div>
 
     <script>
-        // Pre-create Audio objects
+        // --- AUDIO ENGINE ---
         const dropSound = new Audio('sounds/drop.mp3');
         dropSound.volume = 0.2;
         const celebrationSong = new Audio('sounds/celebration_song.mp3');
 
-        // This is the "iPad Secret Sauce" - triggers sounds on first user tap
+        // SILENT HEARTBEAT: This keeps the iPad audio engine from sleeping
+        const silentHeartbeat = new Audio("data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAP8A/w==");
+        silentHeartbeat.loop = true;
+
         function startApp() {
-            // Play and pause immediately to "unlock" audio for the whole session
+            // "Prime" all sounds
             dropSound.play().then(() => { dropSound.pause(); dropSound.currentTime = 0; });
             celebrationSong.play().then(() => { celebrationSong.pause(); celebrationSong.currentTime = 0; });
             
+            // Start the silent heartbeat
+            silentHeartbeat.play();
+
             document.getElementById('audio-unlock-overlay').style.display = 'none';
             loadTrial();
         }
 
-        // Logic for triggering the sound
         function playDropSound() {
-            // We use a clone for overlapping drops if the student is fast
-            const soundClone = dropSound.cloneNode();
-            soundClone.volume = 0.2;
-            soundClone.play().catch(e => console.log("Audio blocked", e));
+            // Using a temporary clone ensures zero delay and overlapping support
+            const s = dropSound.cloneNode();
+            s.volume = 0.2;
+            s.play();
         }
 
+        // --- GAME DATA & LOGIC ---
         const trialsData = [
              { gif: "images/dog_smelling.gif", correctWho: "The dog", whoImg: "symbols/dog.png", correctDoing: "is smelling", doingImg: "symbols/smell.png", distWho: "The cat", distWhoImg: "symbols/cat.png", distDoing: "is sleeping", distDoingImg: "symbols/sleep.png" },
              { gif: "images/girl_running.gif", correctWho: "The girl", whoImg: "symbols/girl.png", correctDoing: "is running", doingImg: "symbols/run.png", distWho: "The boy", distWhoImg: "symbols/boy.png", distDoing: "is eating", distDoingImg: "symbols/eat.png" },
@@ -156,11 +159,9 @@
                 div.dataset.text = item.text;
                 div.innerHTML = `<img src="${item.img}"><span>${item.text}</span>`;
                 
-                // Drag Events
                 div.addEventListener('dragstart', (e) => e.target.classList.add('dragging'));
                 div.addEventListener('dragend', (e) => {
                     e.target.classList.remove('dragging');
-                    // AUDIO FIX: If the element ended up in the drop zone, play sound here
                     if (e.target.parentElement.id === "drop-zone") {
                         playDropSound();
                     }
@@ -175,9 +176,7 @@
             zone.addEventListener('dragover', e => e.preventDefault());
             zone.addEventListener('drop', e => {
                 const dragging = document.querySelector('.dragging');
-                if (dragging) {
-                    zone.appendChild(dragging);
-                }
+                if (dragging) { zone.appendChild(dragging); }
             });
         });
 
@@ -196,6 +195,9 @@
         function nextTrial() { currentIndex++; if (currentIndex < 10) loadTrial(); else showResults(); }
 
         function showResults() {
+            // Stop heartbeat when game ends to save battery
+            silentHeartbeat.pause();
+
             document.getElementById('game-container').classList.add('hidden');
             document.getElementById('result-screen').classList.remove('hidden');
             document.getElementById('final-pct').innerText = (score / 10 * 100) + "%";
@@ -214,8 +216,6 @@
                 }, 5000);
             }
         }
-        
-        // App now waits for "Tap to Start" to load the first trial
     </script>
 </body>
 </html>

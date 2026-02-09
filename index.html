@@ -2,10 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>AAC Noun + Verb - iPad Pro Audio</title>
+    <title>AAC Noun + Verb - Speech Enabled</title>
     <script src="https://bernardo-castilho.github.io/DragDropTouch/DragDropTouch.js"></script>
     <style>
-        /* Styles remain identical to your current Side-by-Side layout */
+        /* All previous styles remain the same */
         html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; background: #f0f2f5; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; touch-action: none; }
         body { display: flex; align-items: center; justify-content: center; padding: 10px; box-sizing: border-box; }
         #fullscreen-btn { position: absolute; top: 10px; right: 10px; padding: 8px 15px; font-size: 0.8rem; background: #34495e; color: white; border-radius: 5px; z-index: 100; cursor: pointer; }
@@ -37,18 +37,14 @@
         .pass { color: #27ae60; font-weight: bold; }
         .fail { color: #e74c3c; font-weight: bold; }
         .hidden { display: none !important; }
-
-        /* Splash Screen */
         #audio-unlock-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: #3498db; color: white; z-index: 3000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        
-        @media (max-width: 850px) { #main-content { flex-direction: column; } #gif-container { flex: none; height: 250px; } #game-container { height: 98vh; } }
     </style>
 </head>
 <body>
 
     <div id="audio-unlock-overlay">
         <h1>AAC Noun + Verb</h1>
-        <p>Ready to play?</p>
+        <p>Speech Enabled</p>
         <button onclick="startApp()" style="background: white; color: #3498db; font-size: 1.5rem;">Tap to Start</button>
     </div>
 
@@ -91,35 +87,40 @@
     </div>
 
     <script>
-        // --- AUDIO ENGINE ---
+        // --- AUDIO & SPEECH ---
         const dropSound = new Audio('sounds/drop.mp3');
         dropSound.volume = 0.2;
         const celebrationSong = new Audio('sounds/celebration_song.mp3');
-
-        // SILENT HEARTBEAT: This keeps the iPad audio engine from sleeping
         const silentHeartbeat = new Audio("data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAP8A/w==");
         silentHeartbeat.loop = true;
 
+        // Function to speak text
+        function speak(text) {
+            // Stop any current speech so it doesn't overlap
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.rate = 0.9; // Slightly slower for clarity
+            utterance.pitch = 1.0;
+            window.speechSynthesis.speak(utterance);
+        }
+
         function startApp() {
-            // "Prime" all sounds
             dropSound.play().then(() => { dropSound.pause(); dropSound.currentTime = 0; });
             celebrationSong.play().then(() => { celebrationSong.pause(); celebrationSong.currentTime = 0; });
-            
-            // Start the silent heartbeat
             silentHeartbeat.play();
-
+            // Pre-warm the speech engine with a silent utterance
+            speak(""); 
             document.getElementById('audio-unlock-overlay').style.display = 'none';
             loadTrial();
         }
 
         function playDropSound() {
-            // Using a temporary clone ensures zero delay and overlapping support
             const s = dropSound.cloneNode();
             s.volume = 0.2;
             s.play();
         }
 
-        // --- GAME DATA & LOGIC ---
+        // --- DATA & LOGIC ---
         const trialsData = [
              { gif: "images/dog_smelling.gif", correctWho: "The dog", whoImg: "symbols/dog.png", correctDoing: "is smelling", doingImg: "symbols/smell.png", distWho: "The cat", distWhoImg: "symbols/cat.png", distDoing: "is sleeping", distDoingImg: "symbols/sleep.png" },
              { gif: "images/girl_running.gif", correctWho: "The girl", whoImg: "symbols/girl.png", correctDoing: "is running", doingImg: "symbols/run.png", distWho: "The boy", distWhoImg: "symbols/boy.png", distDoing: "is eating", distDoingImg: "symbols/eat.png" },
@@ -159,6 +160,9 @@
                 div.dataset.text = item.text;
                 div.innerHTML = `<img src="${item.img}"><span>${item.text}</span>`;
                 
+                // NEW: Trigger speech on touch/click
+                div.addEventListener('pointerdown', () => speak(item.text));
+
                 div.addEventListener('dragstart', (e) => e.target.classList.add('dragging'));
                 div.addEventListener('dragend', (e) => {
                     e.target.classList.remove('dragging');
@@ -185,6 +189,10 @@
             const trial = trialsData[currentIndex];
             if (placed.length < 2) { document.getElementById('feedback').innerText = "Drag both parts!"; return; }
             const isCorrect = placed[0].dataset.type === 'who' && placed[1].dataset.type === 'doing' && placed[0].dataset.text === trial.correctWho && placed[1].dataset.text === trial.correctDoing;
+            
+            // Speak the whole sentence on check!
+            speak(placed[0].dataset.text + " " + placed[1].dataset.text);
+
             trialLog.push({ trialNum: currentIndex + 1, sentence: `${trial.correctWho} ${trial.correctDoing}`, status: isCorrect ? "Pass" : "Fail" });
             if (isCorrect) { document.getElementById('feedback').innerText = "✔ Correct!"; document.getElementById('feedback').style.color = "#2ecc71"; score++; document.getElementById('score-val').innerText = score; } 
             else { document.getElementById('feedback').innerText = "✘ Incorrect"; document.getElementById('feedback').style.color = "#e74c3c"; }
@@ -195,9 +203,7 @@
         function nextTrial() { currentIndex++; if (currentIndex < 10) loadTrial(); else showResults(); }
 
         function showResults() {
-            // Stop heartbeat when game ends to save battery
             silentHeartbeat.pause();
-
             document.getElementById('game-container').classList.add('hidden');
             document.getElementById('result-screen').classList.remove('hidden');
             document.getElementById('final-pct').innerText = (score / 10 * 100) + "%";
@@ -210,8 +216,7 @@
                 overlay.style.display = 'flex';
                 celebrationSong.play();
                 setTimeout(() => {
-                    overlay.style.opacity = '0';
-                    overlay.style.transition = 'opacity 1s';
+                    overlay.style.opacity = '0'; overlay.style.transition = 'opacity 1s';
                     setTimeout(() => overlay.style.display = 'none', 1000);
                 }, 5000);
             }

@@ -2,10 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>AAC Noun + Verb - Speech Enabled</title>
+    <title>AAC Noun + Verb - Polished Edition</title>
     <script src="https://bernardo-castilho.github.io/DragDropTouch/DragDropTouch.js"></script>
     <style>
-        /* All previous styles remain the same */
+        /* UI Layout & Game Styles */
         html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; background: #f0f2f5; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; touch-action: none; }
         body { display: flex; align-items: center; justify-content: center; padding: 10px; box-sizing: border-box; }
         #fullscreen-btn { position: absolute; top: 10px; right: 10px; padding: 8px 15px; font-size: 0.8rem; background: #34495e; color: white; border-radius: 5px; z-index: 100; cursor: pointer; }
@@ -17,35 +17,74 @@
         #workspace { flex: 1; display: flex; flex-direction: column; gap: 10px; min-width: 320px; }
         #drop-zone { flex-shrink: 0; display: flex; gap: 10px; padding: 15px; background: #fff; border: 3px dashed #3498db; min-height: 140px; border-radius: 15px; justify-content: center; align-items: center; }
         .bank { flex-grow: 1; display: flex; gap: 10px; justify-content: center; align-content: center; flex-wrap: wrap; padding: 15px; background: #f9f9f9; border-radius: 10px; border: 2px solid #eee; }
+        
+        /* AAC Symbol Styles */
         .symbol { padding: 8px; border-radius: 12px; cursor: grab; font-weight: bold; width: 135px; min-height: 120px; font-size: 0.95rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; box-sizing: border-box; user-select: none; }
         .symbol img { width: 65px; height: 65px; object-fit: contain; margin-bottom: 5px; pointer-events: none; }
         .who { background: #E0E0E0; border: 4px solid #FFFF00; } 
         .doing { background: #E0E0E0; border: 4px solid #2ECC71; } 
         .dragging { opacity: 0.3; }
+        
         #feedback { font-weight: bold; font-size: 1.2rem; height: 30px; text-align: center; }
         .action-area { display: flex; justify-content: center; padding-top: 5px; }
         button { padding: 12px 30px; font-size: 1rem; cursor: pointer; border-radius: 50px; border: none; font-weight: bold; transition: 0.3s; }
         #check-btn { background: #3498db; color: white; }
         #next-btn { background: #2ecc71; color: white; display: none; }
+
+        /* Celebration Overlays */
         #celebration-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.95); z-index: 2000; display: none; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; }
         #celebration-gif { max-width: 70%; max-height: 60%; border-radius: 20px; }
         .celebration-text { font-size: 2.5rem; color: #2ecc71; font-weight: bold; margin-bottom: 20px; }
-        #log-container { flex-grow: 1; overflow-y: auto; margin-top: 10px; }
+
+        /* Lobby & Audio Unlock */
+        #audio-unlock-overlay { 
+            position: fixed; top:0; left:0; width:100%; height:100%; 
+            background: linear-gradient(-45deg, #3498db, #2ecc71, #9b59b6);
+            background-size: 400% 400%;
+            animation: gradientBG 10s ease infinite;
+            color: white; z-index: 3000; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            text-align: center;
+        }
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .start-card {
+            background: rgba(255, 255, 255, 0.2); padding: 50px; border-radius: 40px;
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border: 2px solid rgba(255, 255, 255, 0.3); box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+        .pulse-button {
+            background: white; color: #3498db; font-size: 2.2rem; padding: 20px 60px;
+            border-radius: 100px; border: none; cursor: pointer; font-weight: bold;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1); animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255,255,255,0.7); }
+            70% { transform: scale(1.05); box-shadow: 0 0 0 20px rgba(255,255,255,0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255,255,255,0); }
+        }
+
+        .hidden { display: none !important; }
         table { width: 100%; border-collapse: collapse; }
         th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 0.9rem; }
-        th { background-color: #f2f2f2; position: sticky; top: 0; }
+        th { background-color: #f2f2f2; }
         .pass { color: #27ae60; font-weight: bold; }
         .fail { color: #e74c3c; font-weight: bold; }
-        .hidden { display: none !important; }
-        #audio-unlock-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: #3498db; color: white; z-index: 3000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+
+        @media (max-width: 850px) { #main-content { flex-direction: column; } #gif-container { flex: none; height: 250px; } }
     </style>
 </head>
 <body>
 
     <div id="audio-unlock-overlay">
-        <h1>AAC Noun + Verb</h1>
-        <p>Speech Enabled</p>
-        <button onclick="startApp()" style="background: white; color: #3498db; font-size: 1.5rem;">Tap to Start</button>
+        <div class="start-card">
+            <h1 style="font-size: 3.2rem; margin-bottom: 10px;">🐶 Let's Build Sentences!</h1>
+            <p style="font-size: 1.3rem; margin-bottom: 30px; opacity: 0.9;">Watch the action and pick the words.</p>
+            <button class="pulse-button" onclick="startApp()">START</button>
+        </div>
     </div>
 
     <button id="fullscreen-btn" onclick="toggleFullScreen()">⛶ Full Screen</button>
@@ -77,9 +116,9 @@
     <div id="result-screen" class="hidden">
         <h1 style="margin: 0; color: #2c3e50; font-size: 1.5rem;">Results Summary</h1>
         <div style="font-size: 3rem; color: #3498db;" id="final-pct">0%</div>
-        <div id="log-container">
+        <div style="flex-grow: 1; overflow-y: auto; margin-top: 10px;">
             <table>
-                <thead><tr><th>Trial</th><th>Sentence</th><th>Result</th></tr></thead>
+                <thead><tr style="background:#f2f2f2;"><th>Trial</th><th>Target Sentence</th><th>Result</th></tr></thead>
                 <tbody id="log-body"></tbody>
             </table>
         </div>
@@ -87,40 +126,54 @@
     </div>
 
     <script>
-        // --- AUDIO & SPEECH ---
+        // --- AUDIO ENGINE ---
         const dropSound = new Audio('sounds/drop.mp3');
-        dropSound.volume = 0.2;
         const celebrationSong = new Audio('sounds/celebration_song.mp3');
+        const incorrectSound = new Audio('sounds/incorrect_answer.mp3');
         const silentHeartbeat = new Audio("data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAP8A/w==");
         silentHeartbeat.loop = true;
 
-        // Function to speak text
         function speak(text) {
-            // Stop any current speech so it doesn't overlap
             window.speechSynthesis.cancel();
             const utterance = new SpeechSynthesisUtterance(text);
-            utterance.rate = 0.9; // Slightly slower for clarity
-            utterance.pitch = 1.0;
+            utterance.rate = 0.9;
             window.speechSynthesis.speak(utterance);
         }
 
+        // Fades audio from current volume to zero
+        function fadeAudio(audioElement, durationMs) {
+            const startVolume = audioElement.volume;
+            const steps = 20;
+            const interval = durationMs / steps;
+            const volStep = startVolume / steps;
+
+            const fadeEffect = setInterval(() => {
+                if (audioElement.volume > volStep) {
+                    audioElement.volume -= volStep;
+                } else {
+                    audioElement.volume = 0;
+                    audioElement.pause();
+                    clearInterval(fadeEffect);
+                    audioElement.volume = startVolume; // Reset for next play
+                }
+            }, interval);
+        }
+
         function startApp() {
-            dropSound.play().then(() => { dropSound.pause(); dropSound.currentTime = 0; });
-            celebrationSong.play().then(() => { celebrationSong.pause(); celebrationSong.currentTime = 0; });
+            [dropSound, celebrationSong, incorrectSound, silentHeartbeat].forEach(s => {
+                s.play().then(() => { s.pause(); s.currentTime = 0; }).catch(() => {});
+            });
             silentHeartbeat.play();
-            // Pre-warm the speech engine with a silent utterance
-            speak(""); 
             document.getElementById('audio-unlock-overlay').style.display = 'none';
             loadTrial();
         }
 
-        function playDropSound() {
-            const s = dropSound.cloneNode();
-            s.volume = 0.2;
-            s.play();
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+            else document.exitFullscreen();
         }
 
-        // --- DATA & LOGIC ---
+        // --- DATA & GAMEPLAY ---
         const trialsData = [
              { gif: "images/dog_smelling.gif", correctWho: "The dog", whoImg: "symbols/dog.png", correctDoing: "is smelling", doingImg: "symbols/smell.png", distWho: "The cat", distWhoImg: "symbols/cat.png", distDoing: "is sleeping", distDoingImg: "symbols/sleep.png" },
              { gif: "images/girl_running.gif", correctWho: "The girl", whoImg: "symbols/girl.png", correctDoing: "is running", doingImg: "symbols/run.png", distWho: "The boy", distWhoImg: "symbols/boy.png", distDoing: "is eating", distDoingImg: "symbols/eat.png" },
@@ -136,11 +189,6 @@
 
         let currentIndex = 0, score = 0, trialLog = [];
 
-        function toggleFullScreen() {
-            if (!document.fullscreenElement) { document.documentElement.requestFullscreen(); } 
-            else { document.exitFullscreen(); }
-        }
-
         function loadTrial() {
             const trial = trialsData[currentIndex];
             document.getElementById('current-trial').innerText = currentIndex + 1;
@@ -149,9 +197,12 @@
             document.getElementById('feedback').innerText = "";
             document.getElementById('check-btn').style.display = "inline-block";
             document.getElementById('next-btn').style.display = "none";
+            document.getElementById('next-btn').innerText = "Next Trial \u2192";
+            
             const bank = document.getElementById('word-bank');
             bank.innerHTML = "";
             const items = [{ text: trial.correctWho, type: "who", img: trial.whoImg }, { text: trial.correctDoing, type: "doing", img: trial.doingImg }, { text: trial.distWho, type: "who", img: trial.distWhoImg }, { text: trial.distDoing, type: "doing", img: trial.distDoingImg }].sort(() => Math.random() - 0.5);
+            
             items.forEach(item => {
                 const div = document.createElement('div');
                 div.className = `symbol ${item.type}`;
@@ -159,15 +210,12 @@
                 div.dataset.type = item.type;
                 div.dataset.text = item.text;
                 div.innerHTML = `<img src="${item.img}"><span>${item.text}</span>`;
-                
-                // NEW: Trigger speech on touch/click
                 div.addEventListener('pointerdown', () => speak(item.text));
-
                 div.addEventListener('dragstart', (e) => e.target.classList.add('dragging'));
                 div.addEventListener('dragend', (e) => {
                     e.target.classList.remove('dragging');
                     if (e.target.parentElement.id === "drop-zone") {
-                        playDropSound();
+                        const s = dropSound.cloneNode(); s.volume = 0.2; s.play();
                     }
                 });
                 bank.appendChild(div);
@@ -180,7 +228,7 @@
             zone.addEventListener('dragover', e => e.preventDefault());
             zone.addEventListener('drop', e => {
                 const dragging = document.querySelector('.dragging');
-                if (dragging) { zone.appendChild(dragging); }
+                if (dragging) zone.appendChild(dragging);
             });
         });
 
@@ -188,36 +236,78 @@
             const placed = Array.from(dropZone.children);
             const trial = trialsData[currentIndex];
             if (placed.length < 2) { document.getElementById('feedback').innerText = "Drag both parts!"; return; }
-            const isCorrect = placed[0].dataset.type === 'who' && placed[1].dataset.type === 'doing' && placed[0].dataset.text === trial.correctWho && placed[1].dataset.text === trial.correctDoing;
             
-            // Speak the whole sentence on check!
+            const isCorrect = placed[0].dataset.type === 'who' && placed[1].dataset.type === 'doing' && 
+                              placed[0].dataset.text === trial.correctWho && placed[1].dataset.text === trial.correctDoing;
+            
             speak(placed[0].dataset.text + " " + placed[1].dataset.text);
-
             trialLog.push({ trialNum: currentIndex + 1, sentence: `${trial.correctWho} ${trial.correctDoing}`, status: isCorrect ? "Pass" : "Fail" });
-            if (isCorrect) { document.getElementById('feedback').innerText = "✔ Correct!"; document.getElementById('feedback').style.color = "#2ecc71"; score++; document.getElementById('score-val').innerText = score; } 
-            else { document.getElementById('feedback').innerText = "✘ Incorrect"; document.getElementById('feedback').style.color = "#e74c3c"; }
+
+            if (isCorrect) {
+                document.getElementById('feedback').innerText = "\u2714 Correct!";
+                document.getElementById('feedback').style.color = "#2ecc71";
+                score++; document.getElementById('score-val').innerText = score;
+                
+                celebrationSong.volume = 1.0;
+                celebrationSong.currentTime = 0;
+                celebrationSong.play();
+                
+                // MID-GAME FADE: Only fade mid-game. If Trial 10, let it carry over.
+                if (currentIndex < 9) {
+                    setTimeout(() => { 
+                         if (document.getElementById('result-screen').classList.contains('hidden')) {
+                            fadeAudio(celebrationSong, 1000); 
+                         }
+                    }, 4000);
+                }
+            } else {
+                document.getElementById('feedback').innerText = "\u2718 Incorrect";
+                document.getElementById('feedback').style.color = "#e74c3c";
+                incorrectSound.currentTime = 0; incorrectSound.play();
+            }
+
             document.getElementById('check-btn').style.display = "none";
             document.getElementById('next-btn').style.display = "inline-block";
+            if (currentIndex === 9) document.getElementById('next-btn').innerText = "See Results!";
         }
 
-        function nextTrial() { currentIndex++; if (currentIndex < 10) loadTrial(); else showResults(); }
+        function nextTrial() { 
+            // Manual stop ONLY if moving between trials 1-9.
+            // If currentIndex is 9, we are moving to results; don't stop the song!
+            if (currentIndex < 9) {
+                celebrationSong.pause(); 
+                celebrationSong.currentTime = 0; 
+                celebrationSong.volume = 1.0;
+            }
+
+            currentIndex++; if (currentIndex < 10) loadTrial(); else showResults(); 
+        }
 
         function showResults() {
             silentHeartbeat.pause();
             document.getElementById('game-container').classList.add('hidden');
             document.getElementById('result-screen').classList.remove('hidden');
             document.getElementById('final-pct').innerText = (score / 10 * 100) + "%";
+            
             const logBody = document.getElementById('log-body');
+            logBody.innerHTML = "";
             trialLog.forEach(item => {
                 logBody.innerHTML += `<tr><td>${item.trialNum}</td><td>${item.sentence}</td><td class="${item.status.toLowerCase()}">${item.status}</td></tr>`;
             });
+
             if (score >= 8) {
                 const overlay = document.getElementById('celebration-overlay');
-                overlay.style.display = 'flex';
-                celebrationSong.play();
+                overlay.style.display = 'flex'; overlay.style.opacity = '1'; overlay.style.transition = 'none';
+                
+                // In case the last trial was incorrect but they still passed the game:
+                if (celebrationSong.paused) {
+                    celebrationSong.volume = 1.0; celebrationSong.currentTime = 0; celebrationSong.play();
+                }
+
+                // Visual GIF fades after 5s, but audio is NOT faded so it plays to the end.
                 setTimeout(() => {
-                    overlay.style.opacity = '0'; overlay.style.transition = 'opacity 1s';
-                    setTimeout(() => overlay.style.display = 'none', 1000);
+                    overlay.style.transition = 'opacity 1s'; overlay.style.opacity = '0';
+                    setTimeout(() => { overlay.style.display = 'none'; }, 1000);
                 }, 5000);
             }
         }

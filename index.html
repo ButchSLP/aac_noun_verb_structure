@@ -10,7 +10,14 @@
         body { display: flex; align-items: center; justify-content: center; padding: 10px; box-sizing: border-box; }
         #fullscreen-btn { position: absolute; top: 10px; right: 10px; padding: 8px 15px; font-size: 0.8rem; background: #34495e; color: white; border-radius: 5px; z-index: 100; cursor: pointer; }
         #game-container, #result-screen { width: 98%; max-width: 1200px; height: 92vh; background: white; padding: 20px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); display: flex; flex-direction: column; box-sizing: border-box; position: relative; }
-        #stats-header { display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: bold; background: #f8f9fa; padding: 10px; border-radius: 10px; flex-shrink: 0; }
+        
+        /* NEW Progress Bar Styles */
+        #progress-container { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 15px; background: #f8f9fa; padding: 15px; border-radius: 15px; flex-shrink: 0; }
+        .progress-node { width: 30px; height: 30px; border-radius: 50%; background: #dfe6e9; border: 2px solid #b2bec3; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: bold; color: #636e72; transition: all 0.4s ease; }
+        .node-active { border-color: #3498db; background: #fff; box-shadow: 0 0 10px rgba(52, 152, 219, 0.5); transform: scale(1.1); color: #3498db; }
+        .node-complete { background: #2ecc71; border-color: #27ae60; color: white; }
+        .score-display { margin-left: auto; font-weight: bold; color: #2c3e50; font-size: 1.1rem; }
+
         #main-content { display: flex; flex-direction: row; gap: 20px; flex-grow: 1; min-height: 0; }
         #gif-container { flex: 1.2; background: #eee; border-radius: 15px; display: flex; align-items: center; justify-content: center; border: 2px solid #ddd; overflow: hidden; }
         #trial-gif { max-width: 100%; max-height: 100%; object-fit: contain; }
@@ -51,21 +58,10 @@
             50% { background-position: 100% 50%; }
             100% { background-position: 0% 50%; }
         }
-        .start-card {
-            background: rgba(255, 255, 255, 0.2); padding: 50px; border-radius: 40px;
-            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-            border: 2px solid rgba(255, 255, 255, 0.3); box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-        }
-        .pulse-button {
-            background: white; color: #3498db; font-size: 2.2rem; padding: 20px 60px;
-            border-radius: 100px; border: none; cursor: pointer; font-weight: bold;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1); animation: pulse 2s infinite;
-        }
-        @keyframes pulse {
-            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255,255,255,0.7); }
-            70% { transform: scale(1.05); box-shadow: 0 0 0 20px rgba(255,255,255,0); }
-            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255,255,255,0); }
-        }
+        .start-card { background: rgba(255, 255, 255, 0.2); padding: 50px; border-radius: 40px; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 2px solid rgba(255, 255, 255, 0.3); box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
+        .pulse-button { background: white; color: #3498db; font-size: 2.2rem; padding: 20px 60px; border-radius: 100px; border: none; cursor: pointer; font-weight: bold; box-shadow: 0 10px 20px rgba(0,0,0,0.1); animation: pulse 2s infinite; }
+        
+        @keyframes pulse { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255,255,255,0.7); } 70% { transform: scale(1.05); box-shadow: 0 0 0 20px rgba(255,255,255,0); } 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255,255,255,0); } }
 
         .hidden { display: none !important; }
         table { width: 100%; border-collapse: collapse; }
@@ -95,10 +91,20 @@
     </div>
 
     <div id="game-container">
-        <div id="stats-header">
-            <span>Trial: <span id="current-trial">1</span> / 10</span>
-            <span>Score: <span id="score-val">0</span></span>
+        <div id="progress-container">
+            <div class="progress-node" id="node-0">1</div>
+            <div class="progress-node" id="node-1">2</div>
+            <div class="progress-node" id="node-2">3</div>
+            <div class="progress-node" id="node-3">4</div>
+            <div class="progress-node" id="node-4">5</div>
+            <div class="progress-node" id="node-5">6</div>
+            <div class="progress-node" id="node-6">7</div>
+            <div class="progress-node" id="node-7">8</div>
+            <div class="progress-node" id="node-8">9</div>
+            <div class="progress-node" id="node-9">10</div>
+            <div class="score-display">Score: <span id="score-val">0</span></div>
         </div>
+
         <div id="main-content">
             <div id="gif-container"><img id="trial-gif" src="" alt="Loading GIF..."></div>
             <div id="workspace">
@@ -140,7 +146,6 @@
             window.speechSynthesis.speak(utterance);
         }
 
-        // Fades audio from current volume to zero
         function fadeAudio(audioElement, durationMs) {
             const startVolume = audioElement.volume;
             const steps = 20;
@@ -154,7 +159,7 @@
                     audioElement.volume = 0;
                     audioElement.pause();
                     clearInterval(fadeEffect);
-                    audioElement.volume = startVolume; // Reset for next play
+                    audioElement.volume = startVolume; 
                 }
             }, interval);
         }
@@ -164,6 +169,8 @@
                 s.play().then(() => { s.pause(); s.currentTime = 0; }).catch(() => {});
             });
             silentHeartbeat.play();
+            const primeSpeech = new SpeechSynthesisUtterance("");
+            window.speechSynthesis.speak(primeSpeech);
             document.getElementById('audio-unlock-overlay').style.display = 'none';
             loadTrial();
         }
@@ -189,9 +196,17 @@
 
         let currentIndex = 0, score = 0, trialLog = [];
 
+        function updateProgressNodes() {
+            for(let i=0; i<10; i++) {
+                const node = document.getElementById(`node-${i}`);
+                node.classList.remove('node-active');
+                if (i === currentIndex) node.classList.add('node-active');
+            }
+        }
+
         function loadTrial() {
+            updateProgressNodes();
             const trial = trialsData[currentIndex];
-            document.getElementById('current-trial').innerText = currentIndex + 1;
             document.getElementById('trial-gif').src = trial.gif;
             document.getElementById('drop-zone').innerHTML = "";
             document.getElementById('feedback').innerText = "";
@@ -210,7 +225,7 @@
                 div.dataset.type = item.type;
                 div.dataset.text = item.text;
                 div.innerHTML = `<img src="${item.img}"><span>${item.text}</span>`;
-                div.addEventListener('pointerdown', () => speak(item.text));
+                div.addEventListener('pointerdown', (e) => speak(item.text));
                 div.addEventListener('dragstart', (e) => e.target.classList.add('dragging'));
                 div.addEventListener('dragend', (e) => {
                     e.target.classList.remove('dragging');
@@ -248,11 +263,13 @@
                 document.getElementById('feedback').style.color = "#2ecc71";
                 score++; document.getElementById('score-val').innerText = score;
                 
+                // Mark node as complete
+                document.getElementById(`node-${currentIndex}`).classList.add('node-complete');
+
                 celebrationSong.volume = 1.0;
                 celebrationSong.currentTime = 0;
                 celebrationSong.play();
                 
-                // MID-GAME FADE: Only fade mid-game. If Trial 10, let it carry over.
                 if (currentIndex < 9) {
                     setTimeout(() => { 
                          if (document.getElementById('result-screen').classList.contains('hidden')) {
@@ -272,8 +289,6 @@
         }
 
         function nextTrial() { 
-            // Manual stop ONLY if moving between trials 1-9.
-            // If currentIndex is 9, we are moving to results; don't stop the song!
             if (currentIndex < 9) {
                 celebrationSong.pause(); 
                 celebrationSong.currentTime = 0; 
@@ -299,12 +314,10 @@
                 const overlay = document.getElementById('celebration-overlay');
                 overlay.style.display = 'flex'; overlay.style.opacity = '1'; overlay.style.transition = 'none';
                 
-                // In case the last trial was incorrect but they still passed the game:
                 if (celebrationSong.paused) {
                     celebrationSong.volume = 1.0; celebrationSong.currentTime = 0; celebrationSong.play();
                 }
 
-                // Visual GIF fades after 5s, but audio is NOT faded so it plays to the end.
                 setTimeout(() => {
                     overlay.style.transition = 'opacity 1s'; overlay.style.opacity = '0';
                     setTimeout(() => { overlay.style.display = 'none'; }, 1000);

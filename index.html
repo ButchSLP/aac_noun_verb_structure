@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>AAC Noun + Verb - iPad Audio Fixed</title>
+    <title>AAC Noun + Verb - iPad Audio Priority</title>
     <script src="https://bernardo-castilho.github.io/DragDropTouch/DragDropTouch.js"></script>
     <style>
         /* UI Layout & Game Styles */
@@ -122,7 +122,7 @@
     </div>
 
     <script>
-        // --- AUDIO ENGINE: STABILIZED FOR iPAD ---
+        // --- STABILIZED AUDIO ENGINE ---
         const dropSound = new Audio('sounds/drop.mp3');
         const incorrectSound = new Audio('sounds/incorrect_answer.mp3');
         const celebrationSong = new Audio('sounds/celebration_song.mp3');
@@ -136,22 +136,16 @@
         let activeFunkySound = null;
 
         function startApp() {
-            // Unlock all sounds SILENTLY
-            const unlockSilently = (audio) => {
-                audio.volume = 0; // Try to mute
+            const unlock = (audio) => {
+                audio.volume = 0;
                 audio.play().then(() => {
                     audio.pause();
                     audio.currentTime = 0;
-                    audio.volume = 1.0; // Reset to full for later
-                }).catch(e => console.log("Unlock skip", e));
+                    audio.volume = 1.0;
+                }).catch(() => {});
             };
-
-            [dropSound, incorrectSound, celebrationSong].forEach(unlockSilently);
-            funkySounds.forEach(unlockSilently);
-
-            // Unlock TTS
+            [dropSound, incorrectSound, celebrationSong, ...funkySounds].forEach(unlock);
             window.speechSynthesis.speak(new SpeechSynthesisUtterance(""));
-
             document.getElementById('audio-unlock-overlay').style.display = 'none';
             loadTrial();
         }
@@ -159,24 +153,28 @@
         function playInstant(audioElement) {
             if (!audioElement) return;
             audioElement.pause();
-            audioElement.volume = 1.0; // FORCE full volume to kill accidental fade-in
             audioElement.currentTime = 0;
-            audioElement.play().catch(e => console.log("Play failed", e));
+            audioElement.volume = 1.0; // Force immediate loudness
+            // Tiny delay ensures iPad audio channel resets from any ducking
+            setTimeout(() => { audioElement.play(); }, 50); 
         }
 
-        function speak(text) {
+        // Updated speak function with a callback for music
+        function speak(text, callback) {
             window.speechSynthesis.cancel();
             const utterance = new SpeechSynthesisUtterance(text);
             utterance.rate = 0.9;
+            if (callback) {
+                utterance.onend = callback;
+            }
             window.speechSynthesis.speak(utterance);
         }
 
         function fadeOut(audioElement, durationMs) {
             if (!audioElement) return;
             let currentVol = 1.0;
-            const step = 0.05;
-            const intervalTime = durationMs * step;
-            
+            const step = 0.1;
+            const intervalTime = durationMs * 0.1;
             const fadeEffect = setInterval(() => {
                 if (currentVol > step) {
                     currentVol -= step;
@@ -184,21 +182,12 @@
                 } else {
                     clearInterval(fadeEffect);
                     audioElement.pause();
-                    audioElement.volume = 1.0; // Reset for next time
+                    audioElement.volume = 1.0;
                 }
             }, intervalTime);
         }
 
-        function stopAllFunky() {
-            funkySounds.forEach(s => {
-                s.pause();
-                s.currentTime = 0;
-                s.volume = 1.0;
-            });
-            activeFunkySound = null;
-        }
-
-        // --- GAME CONTENT ---
+        // --- GAME LOGIC ---
         const trialsData = [
              { gif: "images/dog_smelling.gif", correctWho: "The dog", whoImg: "symbols/dog.png", correctDoing: "is smelling", doingImg: "symbols/smell.png", distWho: "The cat", distWhoImg: "symbols/cat.png", distDoing: "is sleeping", distDoingImg: "symbols/sleep.png" },
              { gif: "images/girl_running.gif", correctWho: "The girl", whoImg: "symbols/girl.png", correctDoing: "is running", doingImg: "symbols/run.png", distWho: "The boy", distWhoImg: "symbols/boy.png", distDoing: "is eating", distDoingImg: "symbols/eat.png" },
@@ -220,23 +209,15 @@
                 n.classList.remove('node-active');
                 if (i === currentIndex) n.classList.add('node-active');
             });
-
             const trial = trialsData[currentIndex];
             document.getElementById('trial-gif').src = trial.gif;
             document.getElementById('drop-zone').innerHTML = "";
             document.getElementById('feedback').innerText = "";
             document.getElementById('check-btn').style.display = "inline-block";
             document.getElementById('next-btn').style.display = "none";
-            
             const bank = document.getElementById('word-bank');
             bank.innerHTML = "";
-            const items = [
-                { text: trial.correctWho, type: "who", img: trial.whoImg }, 
-                { text: trial.correctDoing, type: "doing", img: trial.doingImg }, 
-                { text: trial.distWho, type: "who", img: trial.distWhoImg }, 
-                { text: trial.distDoing, type: "doing", img: trial.distDoingImg }
-            ].sort(() => Math.random() - 0.5);
-
+            const items = [{ text: trial.correctWho, type: "who", img: trial.whoImg }, { text: trial.correctDoing, type: "doing", img: trial.doingImg }, { text: trial.distWho, type: "who", img: trial.distWhoImg }, { text: trial.distDoing, type: "doing", img: trial.distDoingImg }].sort(() => Math.random() - 0.5);
             items.forEach(item => {
                 const div = document.createElement('div');
                 div.className = `symbol ${item.type}`;
@@ -274,7 +255,6 @@
                               (placed[1].dataset.text === trial.correctDoing);
             
             const sentenceText = placed.map(node => node.dataset.text).join(" ");
-            if (placed.length > 0) speak(sentenceText);
             trialLog.push({ trialNum: currentIndex + 1, sentence: `${trial.correctWho} ${trial.correctDoing}`, status: isCorrect ? "Pass" : "Fail" });
 
             if (isCorrect) {
@@ -283,17 +263,20 @@
                 score++; document.getElementById('score-val').innerText = score;
                 document.getElementById(`node-${currentIndex}`).classList.add('node-complete');
                 
-                activeFunkySound = funkySounds[Math.floor(Math.random() * funkySounds.length)];
-                playInstant(activeFunkySound);
-
-                if (currentIndex < 9) {
-                    setTimeout(() => { 
-                        if (document.getElementById('result-screen').classList.contains('hidden')) {
-                            fadeOut(activeFunkySound, 1500);
-                        }
-                    }, 4000);
-                }
+                // 1. Speak the sentence first
+                speak(sentenceText, () => {
+                    // 2. Play funky sound ONLY AFTER speech ends
+                    activeFunkySound = funkySounds[Math.floor(Math.random() * funkySounds.length)];
+                    playInstant(activeFunkySound);
+                    
+                    if (currentIndex < 9) {
+                        setTimeout(() => { 
+                            if (document.getElementById('result-screen').classList.contains('hidden')) fadeOut(activeFunkySound, 1500); 
+                        }, 4000);
+                    }
+                });
             } else {
+                // Incorrect logic: NO speech, just the sound
                 document.getElementById('feedback').innerText = placed.length > 2 ? "✘ Too many words!" : "✘ Try again!";
                 document.getElementById('feedback').style.color = "#e74c3c";
                 playInstant(incorrectSound);
@@ -304,31 +287,26 @@
         }
 
         function nextTrial() { 
-            stopAllFunky();
-            currentIndex++; 
-            if (currentIndex < 10) loadTrial(); else showResults(); 
+            if (activeFunkySound) { activeFunkySound.pause(); activeFunkySound.currentTime = 0; activeFunkySound.volume = 1.0; }
+            currentIndex++; if (currentIndex < 10) loadTrial(); else showResults(); 
         }
 
         function showResults() {
-            stopAllFunky();
+            if (activeFunkySound) { activeFunkySound.pause(); activeFunkySound.currentTime = 0; }
             document.getElementById('game-container').classList.add('hidden');
             document.getElementById('result-screen').classList.remove('hidden');
             document.getElementById('final-pct').innerText = (score / 10 * 100) + "%";
-            
             const logBody = document.getElementById('log-body');
             logBody.innerHTML = "";
             trialLog.forEach(item => {
                 logBody.innerHTML += `<tr><td>${item.trialNum}</td><td>${item.sentence}</td><td class="${item.status.toLowerCase()}">${item.status}</td></tr>`;
             });
-
             if (score >= 8) {
                 const overlay = document.getElementById('celebration-overlay');
-                overlay.style.display = 'flex'; 
-                overlay.style.opacity = '1';
+                overlay.style.display = 'flex'; overlay.style.opacity = '1';
                 playInstant(celebrationSong);
                 setTimeout(() => {
-                    overlay.style.transition = 'opacity 1s';
-                    overlay.style.opacity = '0';
+                    overlay.style.transition = 'opacity 1s'; overlay.style.opacity = '0';
                     setTimeout(() => { overlay.style.display = 'none'; }, 1000);
                 }, 5000);
             }

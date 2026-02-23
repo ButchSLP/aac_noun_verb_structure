@@ -2,18 +2,24 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>AAC Noun + Verb - Celebration Flow</title>
+    <title>AAC Noun + Verb - iPad Fixed</title>
     <script src="https://bernardo-castilho.github.io/DragDropTouch/DragDropTouch.js"></script>
     <style>
         /* UI Layout & Game Styles */
         html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; background: #f0f2f5; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; touch-action: none; }
         body { display: flex; align-items: center; justify-content: center; padding: 5px; box-sizing: border-box; }
         #fullscreen-btn { position: absolute; top: 10px; right: 10px; padding: 5px 10px; font-size: 0.7rem; background: #34495e; color: white; border-radius: 5px; z-index: 100; cursor: pointer; border: none; }
-        #game-container, #result-screen { width: 100%; max-width: 1200px; height: 98vh; background: white; padding: 15px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); display: flex; flex-direction: column; box-sizing: border-box; position: relative; overflow: hidden; }
+        
+        #game-container, #result-screen { 
+            width: 100%; max-width: 1200px; height: 98vh; 
+            background: white; padding: 15px; border-radius: 20px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
+            display: flex; flex-direction: column; box-sizing: border-box; 
+            position: relative; overflow: hidden;
+        }
 
-        /* Progress Bar */
         #progress-container { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 10px; background: #f8f9fa; padding: 10px; border-radius: 12px; flex-shrink: 0; }
-        .progress-node { width: 25px; height: 25px; border-radius: 50%; background: #dfe6e9; border: 2px solid #b2bec3; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: bold; color: #636e72; transition: all 0.4s ease; }
+        .progress-node { width: 25px; height: 25px; border-radius: 50%; background: #dfe6e9; border: 2px solid #b2bec3; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: bold; color: #636e72; }
         .node-active { border-color: #3498db; background: #fff; box-shadow: 0 0 8px rgba(52, 152, 219, 0.5); transform: scale(1.1); color: #3498db; }
         .node-complete { background: #2ecc71; border-color: #27ae60; color: white; }
         .score-display { margin-left: auto; font-weight: bold; color: #2c3e50; font-size: 0.9rem; }
@@ -25,8 +31,8 @@
         #drop-zone { flex-shrink: 0; display: flex; gap: 8px; padding: 10px; background: #fff; border: 3px dashed #3498db; min-height: 110px; border-radius: 15px; justify-content: center; align-items: center; }
         .bank { flex-grow: 1; display: flex; gap: 8px; justify-content: center; align-content: center; flex-wrap: wrap; padding: 10px; background: #f9f9f9; border-radius: 10px; border: 2px solid #eee; overflow-y: auto; }
         
-        .symbol { padding: 3px; border-radius: 10px; cursor: grab; font-weight: bold; width: 115px; height: 100px; font-size: 0.8rem; box-shadow: 0 3px 5px rgba(0,0,0,0.1); text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: space-between; box-sizing: border-box; user-select: none; background: #E0E0E0; }
-        .symbol img { width: 65px; height: 65px; object-fit: contain; margin-top: 2px; pointer-events: none; flex-shrink: 0; }
+        .symbol { padding: 3px; border-radius: 10px; cursor: grab; font-weight: bold; width: 115px; height: 100px; font-size: 0.8rem; box-shadow: 0 3px 5px rgba(0,0,0,0.1); text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: space-between; box-sizing: border-box; background: #E0E0E0; }
+        .symbol img { width: 65px; height: 65px; object-fit: contain; margin-top: 2px; pointer-events: none; }
         .symbol span { margin-bottom: 2px; line-height: 1; }
         .who { border: 4px solid #FFFF00; } 
         .doing { border: 4px solid #2ECC71; } 
@@ -34,11 +40,10 @@
         
         #feedback { font-weight: bold; font-size: 1.1rem; height: 25px; text-align: center; margin: 2px 0; }
         .action-area { display: flex; justify-content: center; padding-bottom: 5px; flex-shrink: 0; }
-        button { padding: 10px 25px; font-size: 0.9rem; cursor: pointer; border-radius: 50px; border: none; font-weight: bold; transition: 0.3s; }
+        button { padding: 10px 25px; font-size: 0.9rem; cursor: pointer; border-radius: 50px; border: none; font-weight: bold; }
         #check-btn { background: #3498db; color: white; }
         #next-btn { background: #2ecc71; color: white; display: none; }
 
-        /* Overlays */
         #celebration-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.95); z-index: 2000; display: none; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; }
         #celebration-gif { max-width: 60%; max-height: 50%; border-radius: 20px; }
         .celebration-text { font-size: 2rem; color: #2ecc71; font-weight: bold; margin-bottom: 15px; }
@@ -55,7 +60,7 @@
         .pass { color: #27ae60; font-weight: bold; }
         .fail { color: #e74c3c; font-weight: bold; }
 
-        @media (max-width: 850px) { #main-content { flex-direction: column; } #gif-container { flex: none; height: 35%; } .symbol { width: 105px; height: 90px; font-size: 0.75rem; } .symbol img { width: 55px; height: 55px; } }
+        @media (max-width: 850px) { #main-content { flex-direction: column; } #gif-container { flex: none; height: 35%; } .symbol { width: 105px; height: 90px; } .symbol img { width: 55px; height: 55px; } }
     </style>
 </head>
 <body>
@@ -117,19 +122,40 @@
     </div>
 
     <script>
-        // --- AUDIO ENGINE ---
+        // --- IMPROVED AUDIO ENGINE FOR iPAD ---
         const dropSound = new Audio('sounds/drop.mp3');
         const incorrectSound = new Audio('sounds/incorrect_answer.mp3');
         const celebrationSong = new Audio('sounds/celebration_song.mp3');
-        const silentHeartbeat = new Audio("data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAP8A/w==");
-        silentHeartbeat.loop = true;
-
+        
         const funkySounds = [
             new Audio('sounds/funky_one.mp3'),
             new Audio('sounds/funky_two.mp3'),
             new Audio('sounds/funky_three.mp3')
         ];
+        
         let activeFunkySound = null;
+
+        function startApp() {
+            // Aggressively unlock all sounds on first tap
+            const unlock = (s) => {
+                s.play().then(() => { s.pause(); s.currentTime = 0; }).catch(e => console.log("Unlock error", e));
+            };
+
+            [dropSound, incorrectSound, celebrationSong].forEach(unlock);
+            funkySounds.forEach(unlock);
+
+            // Trigger dummy speech to unlock TTS channel
+            const silentSpeak = new SpeechSynthesisUtterance("");
+            window.speechSynthesis.speak(silentSpeak);
+
+            document.getElementById('audio-unlock-overlay').style.display = 'none';
+            loadTrial();
+        }
+
+        function playSound(audioElement) {
+            audioElement.currentTime = 0;
+            audioElement.play();
+        }
 
         function speak(text) {
             window.speechSynthesis.cancel();
@@ -140,32 +166,22 @@
 
         function fadeAudio(audioElement, durationMs) {
             if (!audioElement) return;
-            const startVolume = audioElement.volume;
-            const steps = 20;
-            const interval = durationMs / steps;
-            const volStep = startVolume / steps;
-            const fadeEffect = setInterval(() => {
-                if (audioElement.volume > volStep) { audioElement.volume -= volStep; } 
-                else { audioElement.volume = 0; audioElement.pause(); clearInterval(fadeEffect); audioElement.volume = startVolume; }
+            let vol = 1.0;
+            const interval = 50;
+            const step = 1.0 / (durationMs / interval);
+            const fade = setInterval(() => {
+                vol -= step;
+                if (vol <= 0) {
+                    audioElement.pause();
+                    clearInterval(fade);
+                    audioElement.volume = 1.0;
+                } else {
+                    audioElement.volume = vol;
+                }
             }, interval);
         }
 
-        function startApp() {
-            const allSounds = [dropSound, incorrectSound, celebrationSong, silentHeartbeat, ...funkySounds];
-            allSounds.forEach(s => {
-                s.play().then(() => { s.pause(); s.currentTime = 0; }).catch(() => {});
-            });
-            silentHeartbeat.play();
-            window.speechSynthesis.speak(new SpeechSynthesisUtterance(""));
-            document.getElementById('audio-unlock-overlay').style.display = 'none';
-            loadTrial();
-        }
-
-        function toggleFullScreen() {
-            if (!document.fullscreenElement) document.documentElement.requestFullscreen();
-            else document.exitFullscreen();
-        }
-
+        // --- GAME LOGIC ---
         const trialsData = [
              { gif: "images/dog_smelling.gif", correctWho: "The dog", whoImg: "symbols/dog.png", correctDoing: "is smelling", doingImg: "symbols/smell.png", distWho: "The cat", distWhoImg: "symbols/cat.png", distDoing: "is sleeping", distDoingImg: "symbols/sleep.png" },
              { gif: "images/girl_running.gif", correctWho: "The girl", whoImg: "symbols/girl.png", correctDoing: "is running", doingImg: "symbols/run.png", distWho: "The boy", distWhoImg: "symbols/boy.png", distDoing: "is eating", distDoingImg: "symbols/eat.png" },
@@ -212,7 +228,7 @@
                 div.addEventListener('dragend', (e) => {
                     e.target.classList.remove('dragging');
                     if (e.target.parentElement.id === "drop-zone") {
-                        const s = dropSound.cloneNode(); s.volume = 0.2; s.play();
+                        playSound(dropSound); // NO CLONING
                     }
                 });
                 bank.appendChild(div);
@@ -248,19 +264,16 @@
                 score++; document.getElementById('score-val').innerText = score;
                 document.getElementById(`node-${currentIndex}`).classList.add('node-complete');
                 
-                // Plays random funky sound for the trial
                 activeFunkySound = funkySounds[Math.floor(Math.random() * funkySounds.length)];
-                activeFunkySound.volume = 1.0; activeFunkySound.currentTime = 0; activeFunkySound.play();
+                playSound(activeFunkySound);
 
                 if (currentIndex < 9) {
-                    setTimeout(() => { 
-                        if (document.getElementById('result-screen').classList.contains('hidden')) fadeAudio(activeFunkySound, 1000); 
-                    }, 4000);
+                    setTimeout(() => { if (document.getElementById('result-screen').classList.contains('hidden')) fadeAudio(activeFunkySound, 1000); }, 4000);
                 }
             } else {
                 document.getElementById('feedback').innerText = placed.length > 2 ? "✘ Too many words!" : "✘ Try again!";
                 document.getElementById('feedback').style.color = "#e74c3c";
-                incorrectSound.currentTime = 0; incorrectSound.play();
+                playSound(incorrectSound);
             }
             document.getElementById('check-btn').style.display = "none";
             document.getElementById('next-btn').style.display = "inline-block";
@@ -268,43 +281,35 @@
         }
 
         function nextTrial() { 
-            // Only stop funky sound if we aren't at the end
-            if (currentIndex < 9 && activeFunkySound) { 
-                activeFunkySound.pause(); activeFunkySound.currentTime = 0; 
-            }
+            if (currentIndex < 9 && activeFunkySound) { activeFunkySound.pause(); activeFunkySound.currentTime = 0; }
             currentIndex++; if (currentIndex < 10) loadTrial(); else showResults(); 
         }
 
         function showResults() {
-            silentHeartbeat.pause();
             if (activeFunkySound) { activeFunkySound.pause(); activeFunkySound.currentTime = 0; }
-
             document.getElementById('game-container').classList.add('hidden');
             document.getElementById('result-screen').classList.remove('hidden');
             document.getElementById('final-pct').innerText = (score / 10 * 100) + "%";
-            
             const logBody = document.getElementById('log-body');
             logBody.innerHTML = "";
             trialLog.forEach(item => {
                 logBody.innerHTML += `<tr><td>${item.trialNum}</td><td>${item.sentence}</td><td class="${item.status.toLowerCase()}">${item.status}</td></tr>`;
             });
 
-            // FINAL CELEBRATION LOGIC
             if (score >= 8) {
                 const overlay = document.getElementById('celebration-overlay');
-                overlay.style.display = 'flex'; 
-                overlay.style.opacity = '1';
-                
-                celebrationSong.volume = 1.0;
-                celebrationSong.currentTime = 0;
-                celebrationSong.play();
-                
+                overlay.style.display = 'flex'; overlay.style.opacity = '1';
+                playSound(celebrationSong);
                 setTimeout(() => {
-                    overlay.style.transition = 'opacity 1s';
-                    overlay.style.opacity = '0';
+                    overlay.style.transition = 'opacity 1s'; overlay.style.opacity = '0';
                     setTimeout(() => { overlay.style.display = 'none'; }, 1000);
                 }, 5000);
             }
+        }
+
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {});
+            else document.exitFullscreen().catch(() => {});
         }
     </script>
 </body>

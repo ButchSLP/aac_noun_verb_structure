@@ -2,63 +2,47 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>AAC Noun + Verb - iPad Silent Start</title>
+    <title>AAC Noun + Verb - Instant Audio Fix</title>
     <script src="https://bernardo-castilho.github.io/DragDropTouch/DragDropTouch.js"></script>
     <style>
         html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; background: #f0f2f5; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; touch-action: none; }
         body { display: flex; align-items: center; justify-content: center; padding: 5px; box-sizing: border-box; }
-        
-        #game-container, #result-screen { 
-            width: 100%; max-width: 1200px; height: 98vh; background: white; 
-            padding: 15px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
-            display: flex; flex-direction: column; box-sizing: border-box; 
-            position: relative; overflow: hidden; 
-        }
-
+        #game-container, #result-screen { width: 100%; max-width: 1200px; height: 98vh; background: white; padding: 15px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); display: flex; flex-direction: column; box-sizing: border-box; position: relative; overflow: hidden; }
         #progress-container { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 10px; background: #f8f9fa; padding: 10px; border-radius: 12px; flex-shrink: 0; }
         .progress-node { width: 25px; height: 25px; border-radius: 50%; background: #dfe6e9; border: 2px solid #b2bec3; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: bold; color: #636e72; }
         .node-active { border-color: #3498db; background: #fff; box-shadow: 0 0 8px rgba(52, 152, 219, 0.5); transform: scale(1.1); color: #3498db; }
         .node-complete { background: #2ecc71; border-color: #27ae60; color: white; }
         .score-display { margin-left: auto; font-weight: bold; color: #2c3e50; font-size: 0.9rem; }
-
         #main-content { display: flex; flex-direction: row; gap: 15px; flex-grow: 1; min-height: 0; }
         #gif-container { flex: 1.2; background: #eee; border-radius: 15px; display: flex; align-items: center; justify-content: center; border: 2px solid #ddd; overflow: hidden; }
         #trial-gif { max-width: 100%; max-height: 100%; object-fit: contain; }
-        
         #workspace { flex: 1; display: flex; flex-direction: column; gap: 8px; min-width: 300px; min-height: 0; }
         #drop-zone { flex-shrink: 0; display: flex; gap: 8px; padding: 10px; background: #fff; border: 3px dashed #3498db; min-height: 110px; border-radius: 15px; justify-content: center; align-items: center; }
         .bank { flex-grow: 1; display: flex; gap: 8px; justify-content: center; align-content: center; flex-wrap: wrap; padding: 10px; background: #f9f9f9; border-radius: 10px; border: 2px solid #eee; overflow-y: auto; }
-        
         .symbol { padding: 3px; border-radius: 10px; cursor: grab; font-weight: bold; width: 115px; height: 100px; font-size: 0.8rem; box-shadow: 0 3px 5px rgba(0,0,0,0.1); text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: space-between; box-sizing: border-box; background: #E0E0E0; }
         .symbol img { width: 65px; height: 65px; object-fit: contain; margin-top: 2px; pointer-events: none; }
         .symbol span { margin-bottom: 2px; line-height: 1; }
         .who { border: 4px solid #FFFF00; } 
         .doing { border: 4px solid #2ECC71; } 
         .dragging { opacity: 0.3; }
-
         #feedback { font-weight: bold; font-size: 1.1rem; height: 25px; text-align: center; margin: 2px 0; }
         .action-area { display: flex; justify-content: center; padding-bottom: 5px; flex-shrink: 0; }
         button { padding: 10px 25px; font-size: 0.9rem; cursor: pointer; border-radius: 50px; border: none; font-weight: bold; }
         #check-btn { background: #3498db; color: white; }
         #next-btn { background: #2ecc71; color: white; display: none; }
-
         #celebration-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.95); z-index: 2000; display: none; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; }
         #celebration-gif { max-width: 60%; max-height: 50%; border-radius: 20px; }
         .celebration-text { font-size: 2rem; color: #2ecc71; font-weight: bold; margin-bottom: 15px; }
-
         #audio-unlock-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: linear-gradient(-45deg, #3498db, #2ecc71, #9b59b6); background-size: 400% 400%; animation: gradientBG 10s ease infinite; color: white; z-index: 3000; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
         @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
         .start-card { background: rgba(255, 255, 255, 0.2); padding: 30px; border-radius: 30px; backdrop-filter: blur(12px); border: 2px solid rgba(255, 255, 255, 0.3); }
         .pulse-button { background: white; color: #3498db; font-size: 1.8rem; padding: 15px 45px; border-radius: 100px; border: none; cursor: pointer; font-weight: bold; animation: pulse 2s infinite; }
-
         .hidden { display: none !important; }
         table { width: 100%; border-collapse: collapse; }
         th, td { border: 1px solid #ddd; padding: 6px; text-align: left; font-size: 0.8rem; }
         th { background-color: #f2f2f2; }
         .pass { color: #27ae60; font-weight: bold; }
         .fail { color: #e74c3c; font-weight: bold; }
-
-        @media (max-width: 850px) { #main-content { flex-direction: column; } #gif-container { flex: none; height: 35%; } .symbol { width: 105px; height: 90px; } .symbol img { width: 55px; height: 55px; } }
     </style>
 </head>
 <body>
@@ -112,7 +96,6 @@
     </div>
 
     <script>
-        // --- UPDATED AUDIO ENGINE ---
         const sounds = {
             drop: new Audio('sounds/drop.mp3'),
             incorrect: new Audio('sounds/incorrect_answer.mp3'),
@@ -124,22 +107,15 @@
 
         const funkyKeys = ['funky1', 'funky2', 'funky3'];
         let activeSound = null;
+        let globalTrialId = 0;
 
         function startApp() {
-            // SILENT PRIMING: Unlocks audio on iPad without being heard
             for (let key in sounds) {
                 const s = sounds[key];
-                s.volume = 0; // Mute completely for unlock
-                s.play().then(() => {
-                    s.pause();
-                    s.currentTime = 0;
-                    s.volume = 1.0; // Reset to full volume for actual gameplay
-                }).catch(() => {});
+                s.volume = 0;
+                s.play().then(() => { s.pause(); s.currentTime = 0; s.volume = 1.0; }).catch(() => {});
             }
-            
-            // Unlock voice engine
             window.speechSynthesis.speak(new SpeechSynthesisUtterance(""));
-            
             document.getElementById('audio-unlock-overlay').style.display = 'none';
             loadTrial();
         }
@@ -147,26 +123,27 @@
         function playSound(key) {
             if (!sounds[key]) return;
             const s = sounds[key];
-            s.pause();
-            s.currentTime = 0;
-            s.volume = 1.0;
-            s.play().catch(e => console.log("Blocked:", e));
+            s.pause(); s.currentTime = 0; s.volume = 1.0;
+            s.play().catch(() => {});
         }
 
         function speak(text, callback) {
             window.speechSynthesis.cancel();
             const utterance = new SpeechSynthesisUtterance(text);
             utterance.rate = 0.9;
+            const capturedTrialId = globalTrialId;
+
             if (callback) {
                 utterance.onend = () => {
-                    // 500ms delay to let iPad volume normalize after speech
-                    setTimeout(callback, 500); 
+                    // INSTANT PLAY: Removed the 500ms timeout
+                    if (capturedTrialId === globalTrialId) {
+                        callback();
+                    }
                 };
             }
             window.speechSynthesis.speak(utterance);
         }
 
-        // --- GAME LOGIC ---
         const trialsData = [
              { gif: "images/dog_smelling.gif", correctWho: "The dog", whoImg: "symbols/dog.png", correctDoing: "is smelling", doingImg: "symbols/smell.png", distWho: "The cat", distWhoImg: "symbols/cat.png", distDoing: "is sleeping", distDoingImg: "symbols/sleep.png" },
              { gif: "images/girl_running.gif", correctWho: "The girl", whoImg: "symbols/girl.png", correctDoing: "is running", doingImg: "symbols/run.png", distWho: "The boy", distWhoImg: "symbols/boy.png", distDoing: "is eating", distDoingImg: "symbols/eat.png" },
@@ -268,11 +245,22 @@
         }
 
         function nextTrial() { 
-            if (activeSound) { activeSound.pause(); activeSound.currentTime = 0; activeSound.volume = 1.0; }
-            currentIndex++; if (currentIndex < 10) loadTrial(); else showResults(); 
+            globalTrialId++; // Immediately invalidates any speech callbacks
+            window.speechSynthesis.cancel(); 
+
+            if (activeSound) { 
+                activeSound.pause(); 
+                activeSound.currentTime = 0; 
+                activeSound.volume = 1.0; 
+                activeSound = null; // Clear the reference
+            }
+            
+            currentIndex++; 
+            if (currentIndex < 10) loadTrial(); else showResults(); 
         }
 
         function showResults() {
+            globalTrialId++;
             if (activeSound) { activeSound.pause(); activeSound.currentTime = 0; }
             document.getElementById('game-container').classList.add('hidden');
             document.getElementById('result-screen').classList.remove('hidden');

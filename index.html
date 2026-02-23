@@ -2,10 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>AAC Noun + Verb - Universal Audio Fix</title>
+    <title>AAC Noun + Verb - Universal Fix</title>
     <script src="https://bernardo-castilho.github.io/DragDropTouch/DragDropTouch.js"></script>
     <style>
-        /* Styles remain identical for UI consistency */
+        /* All UI styles remain exactly as you like them */
         html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; background: #f0f2f5; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; touch-action: none; }
         body { display: flex; align-items: center; justify-content: center; padding: 5px; box-sizing: border-box; }
         #fullscreen-btn { position: absolute; top: 10px; right: 10px; padding: 5px 10px; font-size: 0.7rem; background: #34495e; color: white; border-radius: 5px; z-index: 100; cursor: pointer; border: none; }
@@ -52,8 +52,8 @@
     <div id="audio-unlock-overlay">
         <div class="start-card">
             <h1>🐶 Let's Build Sentences!</h1>
-            <p id="audio-status">Click to start with sound</p>
-            <button id="start-btn" class="pulse-button" onclick="startApp()">START</button>
+            <p>Ready to play?</p>
+            <button class="pulse-button" onclick="startApp()">START</button>
         </div>
     </div>
 
@@ -100,104 +100,52 @@
     </div>
 
     <script>
-        // --- HYBRID AUDIO ENGINE ---
-        let audioCtx = null;
-        const soundBuffers = {};
-        const funkyKeys = ['funky1', 'funky2', 'funky3'];
-        let activeSource = null;
-        let activeGain = null;
-
-        const soundsToLoad = {
-            drop: 'sounds/drop.mp3',
-            incorrect: 'sounds/incorrect_answer.mp3',
-            celebration: 'sounds/celebration_song.mp3',
-            funky1: 'sounds/funky_one.mp3',
-            funky2: 'sounds/funky_two.mp3',
-            funky3: 'sounds/funky_three.mp3'
+        // --- RELIABLE AUDIO ENGINE ---
+        const sounds = {
+            drop: new Audio('sounds/drop.mp3'),
+            incorrect: new Audio('sounds/incorrect_answer.mp3'),
+            celebration: new Audio('sounds/celebration_song.mp3'),
+            funky1: new Audio('sounds/funky_one.mp3'),
+            funky2: new Audio('sounds/funky_two.mp3'),
+            funky3: new Audio('sounds/funky_three.mp3')
         };
 
-        // This function handles the "Fetch" while being honest about local file errors
-        async function loadSoundFiles() {
-            for (const [key, url] of Object.entries(soundsToLoad)) {
-                try {
-                    const response = await fetch(url);
-                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                    const arrayBuffer = await response.arrayBuffer();
-                    soundBuffers[key] = await audioCtx.decodeAudioData(arrayBuffer);
-                } catch (e) {
-                    console.error(`Audio failed for ${url}:`, e);
-                    // If running locally via file:// fetch will fail. 
-                    if (window.location.protocol === 'file:') {
-                        alert("Chrome Security Notice: Programmatic sounds won't work if you double-click the .html file. Please use a local server or host it on the web!");
-                        return;
-                    }
-                }
-            }
-        }
+        const funkyKeys = ['funky1', 'funky2', 'funky3'];
+        let activeSound = null;
 
-        async function startApp() {
-            // 1. Initialize Context ONLY on click
-            if (!audioCtx) {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                document.getElementById('audio-status').innerText = "Loading sounds...";
-                await loadSoundFiles();
+        function startApp() {
+            // Unlock all sounds for iPad on first click
+            for (let key in sounds) {
+                sounds[key].play().then(() => {
+                    sounds[key].pause();
+                    sounds[key].currentTime = 0;
+                }).catch(() => {});
             }
-            
-            // 2. Resume if suspended (Windows Chrome specific)
-            if (audioCtx.state === 'suspended') {
-                await audioCtx.resume();
-            }
-
-            // 3. Unlock Speech
+            // Unlock voice
             window.speechSynthesis.speak(new SpeechSynthesisUtterance(""));
-
             document.getElementById('audio-unlock-overlay').style.display = 'none';
             loadTrial();
         }
 
-        function playSound(key, shouldFadeOut = false) {
-            if (!audioCtx || !soundBuffers[key]) return;
-            
-            // Safety resume
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-
-            const source = audioCtx.createBufferSource();
-            const gainNode = audioCtx.createGain();
-            
-            source.buffer = soundBuffers[key];
-            source.connect(gainNode);
-            gainNode.connect(audioCtx.destination);
-            
-            gainNode.gain.setValueAtTime(1.0, audioCtx.currentTime);
-            source.start(0);
-
-            if (shouldFadeOut) {
-                activeSource = source;
-                activeGain = gainNode;
-                // Schedule fade
-                setTimeout(() => {
-                    if (activeGain && !document.getElementById('result-screen').classList.contains('hidden')) {
-                        // Exponential ramp sounds smoother on iPad
-                        activeGain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1.5);
-                        setTimeout(() => { try { source.stop(); } catch(e){} }, 1600);
-                    }
-                }, 4000);
-            }
-        }
-
-        function stopCurrentSound() {
-            if (activeSource) {
-                try { activeSource.stop(); } catch(e) {}
-                activeSource = null;
-                activeGain = null;
-            }
+        function playSound(key) {
+            if (!sounds[key]) return;
+            const s = sounds[key];
+            s.pause();
+            s.currentTime = 0;
+            s.volume = 1.0;
+            s.play().catch(e => console.log("Play blocked:", e));
         }
 
         function speak(text, callback) {
             window.speechSynthesis.cancel();
             const utterance = new SpeechSynthesisUtterance(text);
             utterance.rate = 0.9;
-            if (callback) utterance.onend = () => { setTimeout(callback, 200); };
+            if (callback) {
+                utterance.onend = () => {
+                    // THE KEY FIX: Wait 500ms for iPad to recover volume levels
+                    setTimeout(callback, 500); 
+                };
+            }
             window.speechSynthesis.speak(utterance);
         }
 
@@ -277,11 +225,25 @@
                 score++; document.getElementById('score-val').innerText = score;
                 document.getElementById(`node-${currentIndex}`).classList.add('node-complete');
                 
+                // 1. Speak sentence -> 2. Wait for end -> 3. Wait 500ms Recovery Gap -> 4. Funky Sound
                 speak(sentenceText, () => {
-                    const randomFunky = funkyKeys[Math.floor(Math.random() * funkyKeys.length)];
-                    playSound(randomFunky, true);
+                    const rand = funkyKeys[Math.floor(Math.random() * funkyKeys.length)];
+                    activeSound = sounds[rand];
+                    playSound(rand);
+                    
+                    // Fade out logic
+                    setTimeout(() => {
+                        if (activeSound && !document.getElementById('result-screen').classList.contains('hidden')) {
+                            let vol = 1.0;
+                            const fader = setInterval(() => {
+                                if (vol > 0.1) { vol -= 0.1; activeSound.volume = vol; }
+                                else { clearInterval(fader); activeSound.pause(); activeSound.volume = 1.0; }
+                            }, 150);
+                        }
+                    }, 4000);
                 });
             } else {
+                // Incorrect: No speech, just buzzer
                 document.getElementById('feedback').innerText = placed.length > 2 ? "✘ Too many words!" : "✘ Try again!";
                 document.getElementById('feedback').style.color = "#e74c3c";
                 playSound('incorrect');
@@ -292,12 +254,12 @@
         }
 
         function nextTrial() { 
-            stopCurrentSound();
+            if (activeSound) { activeSound.pause(); activeSound.currentTime = 0; activeSound.volume = 1.0; }
             currentIndex++; if (currentIndex < 10) loadTrial(); else showResults(); 
         }
 
         function showResults() {
-            stopCurrentSound();
+            if (activeSound) { activeSound.pause(); activeSound.currentTime = 0; }
             document.getElementById('game-container').classList.add('hidden');
             document.getElementById('result-screen').classList.remove('hidden');
             document.getElementById('final-pct').innerText = (score / 10 * 100) + "%";

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>AAC Noun + Verb - The Full Result Edition</title>
+    <title>AAC Noun + Verb - Audio Fixed Edition</title>
     <script src="https://bernardo-castilho.github.io/DragDropTouch/DragDropTouch.js"></script>
     <style>
         html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; background: #f0f2f5; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; touch-action: none; }
@@ -42,7 +42,7 @@
         #check-btn { background: #3498db; color: white; }
         #next-btn { background: #2ecc71; color: white; display: none; }
 
-        /* REWARD SCREENS */
+        /* REWARDS */
         #dance-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1500; display: none; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; border-radius: 20px; pointer-events: auto; }
         #celebration-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.98); z-index: 5000; display: none; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; transition: opacity 1.5s ease; }
         .funky-pulse { animation: funkyBackground 3s infinite; }
@@ -161,10 +161,23 @@
             document.getElementById('foil-val').innerText = val;
         }
 
+        // --- NEW START LOGIC ---
         function startApp() {
+            // 1. Silent Pre-warm for Audio
             for (let key in sounds) {
-                sounds[key].play().then(() => { sounds[key].pause(); sounds[key].currentTime = 0; }).catch(() => {});
+                sounds[key].volume = 0; // Mute it!
+                sounds[key].play().then(() => { 
+                    sounds[key].pause(); 
+                    sounds[key].currentTime = 0;
+                    sounds[key].volume = 1.0; // Ready for later
+                }).catch(() => {});
             }
+            
+            // 2. Unlock Speech Engine
+            window.speechSynthesis.cancel();
+            const silentUtterance = new SpeechSynthesisUtterance(" ");
+            window.speechSynthesis.speak(silentUtterance);
+
             document.getElementById('audio-unlock-overlay').style.display = 'none';
             loadTrial();
         }
@@ -215,7 +228,10 @@
                 div.className = `symbol ${item.type}`;
                 div.draggable = true; div.dataset.text = item.text;
                 div.innerHTML = `<img src="${item.img}"><span>${item.text}</span>`;
-                div.addEventListener('pointerdown', () => speak(item.text));
+                
+                // Use a direct listener for iPad speech reliability
+                div.onpointerdown = function() { speak(item.text); };
+                
                 div.addEventListener('dragstart', (e) => e.target.classList.add('dragging'));
                 div.addEventListener('dragend', (e) => {
                     e.target.classList.remove('dragging');
@@ -237,7 +253,6 @@
             const trial = trialsData[currentIndex];
             const isCorrect = (placed.length === 2) && (placed[0].dataset.text === trial.correctWho) && (placed[1].dataset.text === trial.correctDoing);
             
-            // Log with Target Sentence
             trialLog.push({ 
                 trialNum: currentIndex + 1, 
                 targetSentence: `${trial.correctWho} ${trial.correctDoing}`,
@@ -268,7 +283,9 @@
             } else {
                 document.getElementById('feedback').innerText = "✘ Try again!";
                 document.getElementById('feedback').style.color = "#e74c3c";
-                sounds.incorrect.currentTime = 0; sounds.incorrect.play();
+                window.speechSynthesis.cancel(); // Clear any pending speech
+                sounds.incorrect.currentTime = 0; 
+                sounds.incorrect.play();
             }
             document.getElementById('check-btn').style.display = "none";
             document.getElementById('next-btn').style.display = "inline-block";
@@ -288,7 +305,9 @@
         }
 
         function nextTrial() { 
-            globalTrialId++; window.speechSynthesis.cancel(); clearTimeout(danceFader);
+            globalTrialId++; 
+            window.speechSynthesis.cancel(); 
+            clearTimeout(danceFader);
             document.getElementById('dance-overlay').style.display = "none";
             if (activeSound) { activeSound.pause(); activeSound.currentTime = 0; activeSound.volume = 1.0; activeSound = null; }
             currentIndex++; 
@@ -300,7 +319,6 @@
             document.getElementById('result-screen').classList.remove('hidden');
             document.getElementById('final-pct').innerText = (score / 10 * 100) + "%";
             
-            // Build 3-column table
             document.getElementById('log-body').innerHTML = trialLog.map(t => `
                 <tr>
                     <td>${t.trialNum}</td>

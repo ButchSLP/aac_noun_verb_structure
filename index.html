@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>AAC Noun + Verb - iPad Funky Edition</title>
+    <title>AAC Noun + Verb - The Full Result Edition</title>
     <script src="https://bernardo-castilho.github.io/DragDropTouch/DragDropTouch.js"></script>
     <style>
         html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; background: #f0f2f5; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; touch-action: none; }
@@ -42,46 +42,47 @@
         #check-btn { background: #3498db; color: white; }
         #next-btn { background: #2ecc71; color: white; display: none; }
 
-        /* DANCE OVERLAY with Funky Pulse */
-        #dance-overlay { 
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
-            z-index: 1500; display: none; flex-direction: column; align-items: center; justify-content: center; 
-            cursor: pointer; border-radius: 20px; pointer-events: auto;
-        }
+        /* REWARD SCREENS */
+        #dance-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1500; display: none; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; border-radius: 20px; pointer-events: auto; }
+        #celebration-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.98); z-index: 5000; display: none; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; transition: opacity 1.5s ease; }
+        .funky-pulse { animation: funkyBackground 3s infinite; }
+        @keyframes funkyBackground { 0% { background-color: rgba(155, 89, 182, 0.9); } 33% { background-color: rgba(52, 152, 219, 0.9); } 66% { background-color: rgba(46, 204, 113, 0.9); } 100% { background-color: rgba(155, 89, 182, 0.9); } }
+        #dance-gif, #celebration-gif { max-width: 90%; max-height: 80%; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.4); }
 
-        .funky-pulse {
-            animation: funkyBackground 3s infinite;
-        }
+        /* RESULTS UI */
+        #result-header { display: flex; align-items: center; justify-content: center; gap: 30px; margin-bottom: 10px; flex-shrink: 0; }
+        .mini-party-gif { width: 80px; height: 80px; border-radius: 10px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th { background: #f8f9fa; padding: 12px; border-bottom: 2px solid #dee2e6; text-align: left; color: #495057; font-size: 0.9rem; }
+        td { padding: 10px; border-bottom: 1px solid #eee; color: #2c3e50; font-size: 0.85rem; }
 
-        @keyframes funkyBackground {
-            0% { background-color: rgba(155, 89, 182, 0.9); } /* Purple */
-            33% { background-color: rgba(52, 152, 219, 0.9); } /* Blue */
-            66% { background-color: rgba(46, 204, 113, 0.9); } /* Green */
-            100% { background-color: rgba(155, 89, 182, 0.9); }
-        }
-
-        #dance-gif { max-width: 95%; max-height: 85%; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.4); }
-
-        #celebration-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.95); z-index: 2000; display: none; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; }
-        #celebration-gif { max-width: 60%; max-height: 50%; border-radius: 20px; }
-        .celebration-text { font-size: 2rem; color: #2ecc71; font-weight: bold; margin-bottom: 15px; }
-
+        /* START SCREEN */
         #audio-unlock-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: linear-gradient(-45deg, #3498db, #2ecc71, #9b59b6); background-size: 400% 400%; animation: gradientBG 10s ease infinite; color: white; z-index: 3000; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
         @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-        .pulse-button { background: white; color: #3498db; font-size: 1.8rem; padding: 15px 45px; border-radius: 100px; border: none; cursor: pointer; font-weight: bold; animation: pulse 2s infinite; }
+        .card { background: rgba(255, 255, 255, 0.2); padding: 30px; border-radius: 30px; backdrop-filter: blur(12px); border: 2px solid rgba(255, 255, 255, 0.3); width: 320px; }
+        #settings-modal { display: none; position: absolute; background: white; color: #333; padding: 20px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); z-index: 3500; width: 280px; }
 
         .hidden { display: none !important; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { border: 1px solid #ddd; padding: 6px; text-align: left; font-size: 0.8rem; }
     </style>
 </head>
 <body>
 
     <div id="audio-unlock-overlay">
-        <div style="background: rgba(255,255,255,0.2); padding: 30px; border-radius: 30px; backdrop-filter: blur(12px);">
-            <h1>🐶 Let's Build Sentences!</h1>
-            <p>Ready to play?</p>
-            <button class="pulse-button" onclick="startApp()">START</button>
+        <div class="card" id="start-card">
+            <h1>🐶 Let's Play!</h1>
+            <p>Ready to build sentences?</p>
+            <button style="background: white; color: #3498db; font-size: 1.8rem; padding: 15px 45px; border-radius: 100px; border: none; cursor: pointer; font-weight: bold;" onclick="startApp()">START</button>
+            <br>
+            <button onclick="toggleSettings()" style="background:none; border:2px solid white; color:white; margin-top:15px; padding:8px 20px; border-radius:20px; font-size:0.8rem; cursor:pointer;">⚙ Settings</button>
+        </div>
+        <div id="settings-modal">
+            <h3>Trial Settings</h3>
+            <div style="display:flex; justify-content:space-between; font-weight:bold;">
+                <span>Number of Foils:</span>
+                <span id="foil-val" style="color:#3498db;">2</span>
+            </div>
+            <input type="range" id="foil-slider" min="0" max="3" value="2" oninput="updateFoilText(this.value)" style="width:100%; margin:15px 0;">
+            <button onclick="toggleSettings()" style="background:#3498db; color:white; width:100%; padding:10px; border-radius:10px; border:none; font-weight:bold;">Save & Close</button>
         </div>
     </div>
 
@@ -90,7 +91,7 @@
     </div>
 
     <div id="celebration-overlay">
-        <div class="celebration-text">Amazing Job!</div>
+        <h1 style="color:#2ecc71; font-size: 3rem; margin-bottom:10px;">FANTASTIC!</h1>
         <img id="celebration-gif" src="images/dancing_cartoon.gif" alt="Celebration!">
     </div>
 
@@ -118,18 +119,27 @@
     </div>
 
     <div id="result-screen" class="hidden">
-        <h1 style="margin: 0; color: #2c3e50; font-size: 1.2rem;">Results Summary</h1>
-        <div style="font-size: 2.5rem; color: #3498db;" id="final-pct">0%</div>
-        <div style="flex-grow: 1; overflow-y: auto; margin-top: 10px;">
+        <div id="result-header">
+            <img class="mini-party-gif" id="result-party-left" src="images/dancing_cartoon.gif" alt="party">
+            <div style="text-align:center;">
+                <h1 style="margin: 0; color: #2c3e50; font-size: 1.1rem;">Final Score</h1>
+                <div style="font-size: 2.5rem; color: #3498db; font-weight:bold;" id="final-pct">0%</div>
+            </div>
+            <img class="mini-party-gif" id="result-party-right" src="images/dancing_cartoon.gif" alt="party">
+        </div>
+        <div style="flex-grow: 1; overflow-y: auto;">
             <table>
-                <thead><tr style="background:#f2f2f2;"><th>Trial</th><th>Target</th><th>Result</th></tr></thead>
+                <thead>
+                    <tr><th>Trial</th><th>Target Sentence</th><th>Result</th></tr>
+                </thead>
                 <tbody id="log-body"></tbody>
             </table>
         </div>
-        <button onclick="location.reload()" style="background:#34495e; color:white; margin-top: 10px;">Restart</button>
+        <button onclick="location.reload()" style="background:#34495e; color:white; margin:10px auto; padding:12px 40px; border-radius:30px; display:block; font-size:1.1rem;">Play Again</button>
     </div>
 
     <script>
+        let numFoils = 2;
         const sounds = {
             drop: new Audio('sounds/drop.mp3'),
             incorrect: new Audio('sounds/incorrect_answer.mp3'),
@@ -138,45 +148,33 @@
             funky2: new Audio('sounds/funky_two.mp3'),
             funky3: new Audio('sounds/funky_three.mp3')
         };
-
-        const danceGifs = [
-            'images/animal_dancing_one.gif', 'images/animal_dancing_two.gif',
-            'images/animal_dancing_three.gif', 'images/animal_dancing_four.gif',
-            'images/animal_dancing_five.gif'
-        ];
-
+        const danceGifs = ['images/animal_dancing_one.gif', 'images/animal_dancing_two.gif', 'images/animal_dancing_three.gif', 'images/animal_dancing_four.gif', 'images/animal_dancing_five.gif'];
         const funkyKeys = ['funky1', 'funky2', 'funky3'];
-        let activeSound = null;
-        let globalTrialId = 0;
-        let danceFader = null;
+        let activeSound = null, globalTrialId = 0, danceFader = null;
+
+        function toggleSettings() {
+            const m = document.getElementById('settings-modal');
+            m.style.display = (m.style.display === 'block') ? 'none' : 'block';
+        }
+        function updateFoilText(val) {
+            numFoils = parseInt(val);
+            document.getElementById('foil-val').innerText = val;
+        }
 
         function startApp() {
             for (let key in sounds) {
-                const s = sounds[key];
-                s.volume = 0;
-                s.play().then(() => { s.pause(); s.currentTime = 0; s.volume = 1.0; }).catch(() => {});
+                sounds[key].play().then(() => { sounds[key].pause(); sounds[key].currentTime = 0; }).catch(() => {});
             }
-            window.speechSynthesis.speak(new SpeechSynthesisUtterance(""));
             document.getElementById('audio-unlock-overlay').style.display = 'none';
             loadTrial();
         }
 
-        function playSound(key) {
-            if (!sounds[key]) return;
-            const s = sounds[key];
-            s.pause(); s.currentTime = 0; s.volume = 1.0;
-            s.play().catch(() => {});
-        }
-
         function speak(text, callback) {
             window.speechSynthesis.cancel();
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.rate = 0.9;
-            const capturedTrialId = globalTrialId;
-            if (callback) {
-                utterance.onend = () => { if (capturedTrialId === globalTrialId) callback(); };
-            }
-            window.speechSynthesis.speak(utterance);
+            const u = new SpeechSynthesisUtterance(text);
+            const id = globalTrialId;
+            if (callback) u.onend = () => { if (id === globalTrialId) callback(); };
+            window.speechSynthesis.speak(u);
         }
 
         const trialsData = [
@@ -196,36 +194,32 @@
 
         function loadTrial() {
             const nodes = document.querySelectorAll('.progress-node');
-            nodes.forEach((n, i) => {
-                n.classList.remove('node-active');
-                if (i === currentIndex) n.classList.add('node-active');
-            });
+            nodes.forEach((n, i) => { n.classList.remove('node-active'); if (i === currentIndex) n.classList.add('node-active'); });
             const trial = trialsData[currentIndex];
             document.getElementById('trial-gif').src = trial.gif;
             document.getElementById('drop-zone').innerHTML = "";
             document.getElementById('feedback').innerText = "";
             document.getElementById('check-btn').style.display = "inline-block";
             document.getElementById('next-btn').style.display = "none";
+            document.getElementById('dance-overlay').style.display = "none";
             
-            const danceOverlay = document.getElementById('dance-overlay');
-            danceOverlay.style.display = "none";
-            danceOverlay.classList.remove('funky-pulse');
-
-            const bank = document.getElementById('word-bank');
-            bank.innerHTML = "";
-            const items = [{ text: trial.correctWho, type: "who", img: trial.whoImg }, { text: trial.correctDoing, type: "doing", img: trial.doingImg }, { text: trial.distWho, type: "who", img: trial.distWhoImg }, { text: trial.distDoing, type: "doing", img: trial.distDoingImg }].sort(() => Math.random() - 0.5);
-            items.forEach(item => {
+            let items = [{ text: trial.correctWho, type: "who", img: trial.whoImg }, { text: trial.correctDoing, type: "doing", img: trial.doingImg }];
+            const potentialFoils = [{ text: trial.distWho, type: "who", img: trial.distWhoImg }, { text: trial.distDoing, type: "doing", img: trial.distDoingImg }];
+            for(let i=0; i < numFoils; i++) {
+                if (i < 2) items.push(potentialFoils[i]);
+                else if (i === 2) { const other = trialsData[(currentIndex + 1) % 10]; items.push({ text: other.correctWho, type: "who", img: other.whoImg }); }
+            }
+            const bank = document.getElementById('word-bank'); bank.innerHTML = "";
+            items.sort(() => Math.random() - 0.5).forEach(item => {
                 const div = document.createElement('div');
                 div.className = `symbol ${item.type}`;
-                div.draggable = true;
-                div.dataset.type = item.type;
-                div.dataset.text = item.text;
+                div.draggable = true; div.dataset.text = item.text;
                 div.innerHTML = `<img src="${item.img}"><span>${item.text}</span>`;
                 div.addEventListener('pointerdown', () => speak(item.text));
                 div.addEventListener('dragstart', (e) => e.target.classList.add('dragging'));
                 div.addEventListener('dragend', (e) => {
                     e.target.classList.remove('dragging');
-                    if (e.target.parentElement.id === "drop-zone") playSound('drop');
+                    if (e.target.parentElement.id === "drop-zone") { sounds.drop.currentTime = 0; sounds.drop.play(); }
                 });
                 bank.appendChild(div);
             });
@@ -235,109 +229,105 @@
         const wordBank = document.getElementById('word-bank');
         [dropZone, wordBank].forEach(zone => {
             zone.addEventListener('dragover', e => e.preventDefault());
-            zone.addEventListener('drop', e => {
-                const dragging = document.querySelector('.dragging');
-                if (dragging) zone.appendChild(dragging);
-            });
+            zone.addEventListener('drop', e => { const d = document.querySelector('.dragging'); if (d) zone.appendChild(d); });
         });
 
         function checkAnswer() {
             const placed = Array.from(dropZone.children);
             const trial = trialsData[currentIndex];
-            const isCorrect = (placed.length === 2) && 
-                              (placed[0].dataset.type === 'who') && 
-                              (placed[1].dataset.type === 'doing') && 
-                              (placed[0].dataset.text === trial.correctWho) && 
-                              (placed[1].dataset.text === trial.correctDoing);
+            const isCorrect = (placed.length === 2) && (placed[0].dataset.text === trial.correctWho) && (placed[1].dataset.text === trial.correctDoing);
             
-            const sentenceText = placed.map(node => node.dataset.text).join(" ");
-            trialLog.push({ trialNum: currentIndex + 1, sentence: `${trial.correctWho} ${trial.correctDoing}`, status: isCorrect ? "Pass" : "Fail" });
+            // Log with Target Sentence
+            trialLog.push({ 
+                trialNum: currentIndex + 1, 
+                targetSentence: `${trial.correctWho} ${trial.correctDoing}`,
+                status: isCorrect ? "Pass" : "Fail" 
+            });
 
             if (isCorrect) {
                 document.getElementById('feedback').innerText = "✔ Correct!";
                 document.getElementById('feedback').style.color = "#2ecc71";
                 score++; document.getElementById('score-val').innerText = score;
                 document.getElementById(`node-${currentIndex}`).classList.add('node-complete');
-                
-                speak(sentenceText, () => {
-                    const danceOverlay = document.getElementById('dance-overlay');
-                    const danceImg = document.getElementById('dance-gif');
-                    
-                    // iPad GIF Hack: Force refresh using a timestamp
-                    const randomGif = danceGifs[Math.floor(Math.random() * danceGifs.length)];
-                    danceImg.src = randomGif + "?t=" + new Date().getTime();
-                    
-                    danceOverlay.style.display = "flex";
-                    danceOverlay.classList.add('funky-pulse');
 
-                    const rand = funkyKeys[Math.floor(Math.random() * funkyKeys.length)];
-                    activeSound = sounds[rand];
-                    playSound(rand);
-                    
-                    danceFader = setTimeout(() => {
-                        if (activeSound) {
-                            let vol = 1.0;
-                            const faderInterval = setInterval(() => {
-                                if (vol > 0.1) { vol -= 0.1; activeSound.volume = vol; }
-                                else { 
-                                    clearInterval(faderInterval); 
-                                    activeSound.pause(); 
-                                    activeSound.volume = 1.0; 
-                                    danceOverlay.style.display = "none";
-                                    danceOverlay.classList.remove('funky-pulse');
-                                }
-                            }, 150);
-                        }
-                    }, 6000); 
+                const rand = funkyKeys[Math.floor(Math.random() * funkyKeys.length)];
+                activeSound = sounds[rand];
+                activeSound.volume = 0; 
+                activeSound.currentTime = 0;
+                activeSound.play();
+
+                speak(placed.map(n => n.dataset.text).join(" "), () => {
+                    const overlay = document.getElementById('dance-overlay');
+                    const img = document.getElementById('dance-gif');
+                    img.src = danceGifs[Math.floor(Math.random() * danceGifs.length)] + "?t=" + Date.now();
+                    overlay.style.display = "flex";
+                    overlay.classList.add('funky-pulse');
+                    activeSound.volume = 1.0; 
+                    danceFader = setTimeout(() => fadeOutActiveSound(overlay), 6000);
                 });
             } else {
                 document.getElementById('feedback').innerText = "✘ Try again!";
                 document.getElementById('feedback').style.color = "#e74c3c";
-                playSound('incorrect');
+                sounds.incorrect.currentTime = 0; sounds.incorrect.play();
             }
             document.getElementById('check-btn').style.display = "none";
             document.getElementById('next-btn').style.display = "inline-block";
         }
 
-        function nextTrial() { 
-            globalTrialId++; 
-            window.speechSynthesis.cancel(); 
-            clearTimeout(danceFader); 
-            const danceOverlay = document.getElementById('dance-overlay');
-            danceOverlay.style.display = "none";
-            danceOverlay.classList.remove('funky-pulse');
+        function fadeOutActiveSound(overlayElement) {
+            if (!activeSound) return;
+            let vol = 1.0;
+            const f = setInterval(() => {
+                if (vol > 0.1) { vol -= 0.1; activeSound.volume = vol; }
+                else { 
+                    clearInterval(f); activeSound.pause(); activeSound.volume = 1.0; 
+                    overlayElement.style.display = "none"; 
+                    overlayElement.classList.remove('funky-pulse');
+                }
+            }, 150);
+        }
 
-            if (activeSound) { 
-                activeSound.pause(); 
-                activeSound.currentTime = 0; 
-                activeSound.volume = 1.0; 
-                activeSound = null;
-            }
-            
+        function nextTrial() { 
+            globalTrialId++; window.speechSynthesis.cancel(); clearTimeout(danceFader);
+            document.getElementById('dance-overlay').style.display = "none";
+            if (activeSound) { activeSound.pause(); activeSound.currentTime = 0; activeSound.volume = 1.0; activeSound = null; }
             currentIndex++; 
             if (currentIndex < 10) loadTrial(); else showResults(); 
         }
 
         function showResults() {
-            globalTrialId++;
-            document.getElementById('dance-overlay').style.display = "none";
-            if (activeSound) { activeSound.pause(); activeSound.currentTime = 0; }
             document.getElementById('game-container').classList.add('hidden');
             document.getElementById('result-screen').classList.remove('hidden');
             document.getElementById('final-pct').innerText = (score / 10 * 100) + "%";
-            const logBody = document.getElementById('log-body');
-            logBody.innerHTML = "";
-            trialLog.forEach(item => {
-                logBody.innerHTML += `<tr><td>${item.trialNum}</td><td>${item.sentence}</td><td><span style="color:${item.status === 'Pass' ? '#2ecc71' : '#e74c3c'}; font-weight:bold;">${item.status}</span></td></tr>`;
-            });
+            
+            // Build 3-column table
+            document.getElementById('log-body').innerHTML = trialLog.map(t => `
+                <tr>
+                    <td>${t.trialNum}</td>
+                    <td>${t.targetSentence}</td>
+                    <td style="color:${t.status==='Pass'?'#2ecc71':'#e74c3c'}; font-weight:bold;">${t.status}</td>
+                </tr>
+            `).join("");
+            
             if (score >= 8) {
-                const overlay = document.getElementById('celebration-overlay');
-                overlay.style.display = 'flex'; overlay.style.opacity = '1';
-                playSound('celebration');
+                const cOverlay = document.getElementById('celebration-overlay');
+                const timeStr = "?t=" + Date.now();
+                document.getElementById('celebration-gif').src = "images/dancing_cartoon.gif" + timeStr;
+                document.getElementById('result-party-left').src = "images/dancing_cartoon.gif" + timeStr;
+                document.getElementById('result-party-right').src = "images/dancing_cartoon.gif" + timeStr;
+
+                cOverlay.style.display = 'flex';
+                cOverlay.style.opacity = '1';
+                sounds.celebration.currentTime = 0;
+                sounds.celebration.play();
+
                 setTimeout(() => {
-                    overlay.style.transition = 'opacity 1s'; overlay.style.opacity = '0';
-                    setTimeout(() => { overlay.style.display = 'none'; }, 1000);
-                }, 5000);
+                    cOverlay.style.opacity = '0';
+                    setTimeout(() => { cOverlay.style.display = 'none'; }, 1500);
+                }, 4000);
+            } else {
+                document.getElementById('result-party-left').style.display = 'none';
+                document.getElementById('result-party-right').style.display = 'none';
             }
         }
     </script>

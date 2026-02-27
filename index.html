@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>AAC Noun + Verb - Audio Fixed Edition</title>
+    <title>AAC Noun + Verb - Smart Foil Edition</title>
     <script src="https://bernardo-castilho.github.io/DragDropTouch/DragDropTouch.js"></script>
     <style>
         html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; background: #f0f2f5; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; touch-action: none; }
@@ -161,23 +161,17 @@
             document.getElementById('foil-val').innerText = val;
         }
 
-        // --- NEW START LOGIC ---
         function startApp() {
-            // 1. Silent Pre-warm for Audio
             for (let key in sounds) {
-                sounds[key].volume = 0; // Mute it!
+                sounds[key].volume = 0;
                 sounds[key].play().then(() => { 
                     sounds[key].pause(); 
                     sounds[key].currentTime = 0;
-                    sounds[key].volume = 1.0; // Ready for later
+                    sounds[key].volume = 1.0;
                 }).catch(() => {});
             }
-            
-            // 2. Unlock Speech Engine
             window.speechSynthesis.cancel();
-            const silentUtterance = new SpeechSynthesisUtterance(" ");
-            window.speechSynthesis.speak(silentUtterance);
-
+            window.speechSynthesis.speak(new SpeechSynthesisUtterance(" "));
             document.getElementById('audio-unlock-overlay').style.display = 'none';
             loadTrial();
         }
@@ -216,22 +210,43 @@
             document.getElementById('next-btn').style.display = "none";
             document.getElementById('dance-overlay').style.display = "none";
             
-            let items = [{ text: trial.correctWho, type: "who", img: trial.whoImg }, { text: trial.correctDoing, type: "doing", img: trial.doingImg }];
-            const potentialFoils = [{ text: trial.distWho, type: "who", img: trial.distWhoImg }, { text: trial.distDoing, type: "doing", img: trial.distDoingImg }];
+            // 1. Identify Correct Answers
+            let items = [
+                { text: trial.correctWho, type: "who", img: trial.whoImg }, 
+                { text: trial.correctDoing, type: "doing", img: trial.doingImg }
+            ];
+            const correctTexts = items.map(i => i.text);
+
+            // 2. Build Potential Distractor Pool (current trial foils + foils from other trials)
+            let distractorPool = [
+                { text: trial.distWho, type: "who", img: trial.distWhoImg },
+                { text: trial.distDoing, type: "doing", img: trial.distDoingImg }
+            ];
+            
+            // Add foils from other trials for variety (especially if numFoils is high)
+            trialsData.forEach((t, idx) => {
+                if (idx !== currentIndex) {
+                    distractorPool.push({ text: t.correctWho, type: "who", img: t.whoImg });
+                    distractorPool.push({ text: t.correctDoing, type: "doing", img: t.doingImg });
+                }
+            });
+
+            // 3. Filter Pool: Remove any distractors that match correct symbols
+            const filteredPool = distractorPool.filter(d => !correctTexts.includes(d.text));
+
+            // 4. Shuffle filtered pool and pick the number of foils requested
+            const shuffledPool = filteredPool.sort(() => Math.random() - 0.5);
             for(let i=0; i < numFoils; i++) {
-                if (i < 2) items.push(potentialFoils[i]);
-                else if (i === 2) { const other = trialsData[(currentIndex + 1) % 10]; items.push({ text: other.correctWho, type: "who", img: other.whoImg }); }
+                if(shuffledPool[i]) items.push(shuffledPool[i]);
             }
+
             const bank = document.getElementById('word-bank'); bank.innerHTML = "";
             items.sort(() => Math.random() - 0.5).forEach(item => {
                 const div = document.createElement('div');
                 div.className = `symbol ${item.type}`;
                 div.draggable = true; div.dataset.text = item.text;
                 div.innerHTML = `<img src="${item.img}"><span>${item.text}</span>`;
-                
-                // Use a direct listener for iPad speech reliability
                 div.onpointerdown = function() { speak(item.text); };
-                
                 div.addEventListener('dragstart', (e) => e.target.classList.add('dragging'));
                 div.addEventListener('dragend', (e) => {
                     e.target.classList.remove('dragging');
@@ -283,9 +298,8 @@
             } else {
                 document.getElementById('feedback').innerText = "✘ Try again!";
                 document.getElementById('feedback').style.color = "#e74c3c";
-                window.speechSynthesis.cancel(); // Clear any pending speech
-                sounds.incorrect.currentTime = 0; 
-                sounds.incorrect.play();
+                window.speechSynthesis.cancel();
+                sounds.incorrect.currentTime = 0; sounds.incorrect.play();
             }
             document.getElementById('check-btn').style.display = "none";
             document.getElementById('next-btn').style.display = "inline-block";
@@ -305,9 +319,7 @@
         }
 
         function nextTrial() { 
-            globalTrialId++; 
-            window.speechSynthesis.cancel(); 
-            clearTimeout(danceFader);
+            globalTrialId++; window.speechSynthesis.cancel(); clearTimeout(danceFader);
             document.getElementById('dance-overlay').style.display = "none";
             if (activeSound) { activeSound.pause(); activeSound.currentTime = 0; activeSound.volume = 1.0; activeSound = null; }
             currentIndex++; 
@@ -318,14 +330,7 @@
             document.getElementById('game-container').classList.add('hidden');
             document.getElementById('result-screen').classList.remove('hidden');
             document.getElementById('final-pct').innerText = (score / 10 * 100) + "%";
-            
-            document.getElementById('log-body').innerHTML = trialLog.map(t => `
-                <tr>
-                    <td>${t.trialNum}</td>
-                    <td>${t.targetSentence}</td>
-                    <td style="color:${t.status==='Pass'?'#2ecc71':'#e74c3c'}; font-weight:bold;">${t.status}</td>
-                </tr>
-            `).join("");
+            document.getElementById('log-body').innerHTML = trialLog.map(t => `<tr><td>${t.trialNum}</td><td>${t.targetSentence}</td><td style="color:${t.status==='Pass'?'#2ecc71':'#e74c3c'}; font-weight:bold;">${t.status}</td></tr>`).join("");
             
             if (score >= 8) {
                 const cOverlay = document.getElementById('celebration-overlay');

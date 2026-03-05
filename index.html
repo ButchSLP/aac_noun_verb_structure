@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>AAC Noun + Verb - iPad Optimized</title>
+    <title>AAC Noun + Verb - Classic Size & Unique Symbols</title>
     <script src="https://bernardo-castilho.github.io/DragDropTouch/DragDropTouch.js"></script>
     <style>
         html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; background: #f0f2f5; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; touch-action: none; }
@@ -16,54 +16,33 @@
         }
 
         #progress-container { display: flex; align-items: center; justify-content: center; gap: 5px; margin-bottom: 10px; background: #f8f9fa; padding: 10px; border-radius: 12px; flex-shrink: 0; flex-wrap: wrap; }
-        .progress-node { width: 22px; height: 22px; border-radius: 50%; background: #dfe6e9; border: 2px solid #b2bec3; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: bold; color: #636e72; }
+        .progress-node { width: 20px; height: 20px; border-radius: 50%; background: #dfe6e9; border: 2px solid #b2bec3; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: bold; color: #636e72; }
         .node-active { border-color: #3498db; background: #fff; box-shadow: 0 0 8px rgba(52, 152, 219, 0.5); transform: scale(1.1); color: #3498db; }
         .node-complete { background: #2ecc71; border-color: #27ae60; color: white; }
-        .score-display { margin-left: 15px; font-weight: bold; color: #2c3e50; font-size: 1rem; }
+        .score-display { margin-left: 10px; font-weight: bold; color: #2c3e50; font-size: 0.9rem; }
 
-        #main-content { display: flex; flex-direction: row; gap: 20px; flex-grow: 1; min-height: 0; }
-        
-        /* Adjusted Ratio for iPad Balance */
-        #gif-container { flex: 1; background: #eee; border-radius: 15px; display: flex; align-items: center; justify-content: center; border: 2px solid #ddd; overflow: hidden; }
+        #main-content { display: flex; flex-direction: row; gap: 15px; flex-grow: 1; min-height: 0; }
+        #gif-container { flex: 1.2; background: #eee; border-radius: 15px; display: flex; align-items: center; justify-content: center; border: 2px solid #ddd; overflow: hidden; }
         #trial-gif { max-width: 100%; max-height: 100%; object-fit: contain; }
         
-        #workspace { flex: 1; display: flex; flex-direction: column; gap: 10px; min-width: 350px; min-height: 0; }
-        #drop-zone { flex-shrink: 0; display: flex; gap: 10px; padding: 15px; background: #fff; border: 3px dashed #3498db; min-height: 140px; border-radius: 15px; justify-content: center; align-items: center; }
-        .bank { flex-grow: 1; display: flex; gap: 12px; justify-content: center; align-content: center; flex-wrap: wrap; padding: 15px; background: #f9f9f9; border-radius: 10px; border: 2px solid #eee; overflow-y: auto; }
+        #workspace { flex: 1; display: flex; flex-direction: column; gap: 8px; min-width: 300px; min-height: 0; }
+        #drop-zone { flex-shrink: 0; display: flex; gap: 8px; padding: 10px; background: #fff; border: 3px dashed #3498db; min-height: 110px; border-radius: 15px; justify-content: center; align-items: center; }
+        .bank { flex-grow: 1; display: flex; gap: 8px; justify-content: center; align-content: center; flex-wrap: wrap; padding: 10px; background: #f9f9f9; border-radius: 10px; border: 2px solid #eee; overflow-y: auto; }
         
-        /* SUPERSERIZED SYMBOL CARDS */
-        .symbol { 
-            padding: 5px; border-radius: 15px; cursor: grab; font-weight: bold; 
-            width: 135px; height: 120px; font-size: 0.95rem; 
-            box-shadow: 0 5px 10px rgba(0,0,0,0.1); 
-            text-align: center; display: flex; flex-direction: column; 
-            align-items: center; justify-content: space-between; 
-            box-sizing: border-box;
-            background: #E0E0E0; /* Reverted to Flat Gray */
-            color: #2c3e50;
-            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s ease;
-        }
+        /* CLASSIC SIZE REINSTATED */
+        .symbol { padding: 3px; border-radius: 10px; cursor: grab; font-weight: bold; width: 110px; height: 95px; font-size: 0.8rem; box-shadow: 0 3px 5px rgba(0,0,0,0.1); text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: space-between; box-sizing: border-box; background: #E0E0E0; }
+        .symbol img { width: 60px; height: 60px; object-fit: contain; margin-top: 2px; pointer-events: none; }
+        .symbol span { margin-bottom: 2px; line-height: 1; }
+        .who { border: 4px solid #FFFF00; } 
+        .doing { border: 4px solid #2ECC71; } 
+        .dragging { opacity: 0.3; }
 
-        .symbol:hover { 
-            transform: scale(1.06); 
-            box-shadow: 0 10px 20px rgba(0,0,0,0.15); 
-            z-index: 10;
-        }
-
-        .who { border: 5px solid #FFD700; } 
-        .doing { border: 5px solid #2ECC71; } 
-
-        .symbol img { width: 75px; height: 75px; object-fit: contain; margin-top: 2px; pointer-events: none; }
-        .symbol span { margin-bottom: 4px; line-height: 1; }
-        .dragging { opacity: 0.2; transform: scale(0.8) !important; }
-
-        #feedback { font-weight: bold; font-size: 1.3rem; height: 30px; text-align: center; margin: 5px 0; }
-        .action-area { display: flex; justify-content: center; padding-bottom: 10px; flex-shrink: 0; }
-        button { padding: 15px 35px; font-size: 1.1rem; cursor: pointer; border-radius: 50px; border: none; font-weight: bold; }
+        #feedback { font-weight: bold; font-size: 1.1rem; height: 25px; text-align: center; margin: 2px 0; }
+        .action-area { display: flex; justify-content: center; padding-bottom: 5px; flex-shrink: 0; }
+        button { padding: 10px 25px; font-size: 0.9rem; cursor: pointer; border-radius: 50px; border: none; font-weight: bold; }
         #check-btn { background: #3498db; color: white; }
         #next-btn { background: #2ecc71; color: white; display: none; }
 
-        /* Overlays and Modal Logic remain the same as previous stable version */
         #dance-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1500; display: none; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; border-radius: 20px; pointer-events: auto; }
         #celebration-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.98); z-index: 5000; display: none; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; transition: opacity 1.5s ease; }
         .funky-pulse { animation: funkyBackground 3s infinite; }
@@ -167,21 +146,21 @@
         let activeSound = null, globalTrialId = 0, danceFader = null;
 
         const trialsData = [
-             { gif: "images/dog_smelling.gif", correctWho: "The dog", whoImg: "symbols/dog.png", correctDoing: "is smelling", doingImg: "symbols/smell.png", distWho: "The cat", distWhoImg: "symbols/cat.png", distDoing: "is sleeping", distDoingImg: "symbols/sleep.png" },
-             { gif: "images/girl_running.gif", correctWho: "The girl", whoImg: "symbols/girl.png", correctDoing: "is running", doingImg: "symbols/run.png", distWho: "The boy", distWhoImg: "symbols/boy.png", distDoing: "is eating", distDoingImg: "symbols/eat.png" },
-             { gif: "images/cat_jumping.gif", correctWho: "The cat", whoImg: "symbols/cat.png", correctDoing: "is jumping", doingImg: "symbols/jump.png", distWho: "The bird", distWhoImg: "symbols/bird.png", distDoing: "is flying", distDoingImg: "symbols/fly.png" },
-             { gif: "images/boy_eating.gif", correctWho: "The boy", whoImg: "symbols/boy.png", correctDoing: "is eating", doingImg: "symbols/eat.png", distWho: "The teacher", distWhoImg: "symbols/teacher.png", distDoing: "is writing", distDoingImg: "symbols/write.png" },
-             { gif: "images/baby_crying.gif", correctWho: "The baby", whoImg: "symbols/baby.png", correctDoing: "is crying", doingImg: "symbols/cry.png", distWho: "The man", distWhoImg: "symbols/man.png", distDoing: "is washing", distDoingImg: "symbols/wash.png" },
-             { gif: "images/bird_flying.gif", correctWho: "The bird", whoImg: "symbols/bird.png", correctDoing: "is flying", doingImg: "symbols/fly.png", distWho: "The dog", distWhoImg: "symbols/dog.png", distDoing: "is talking", distDoingImg: "symbols/talk.png" },
-             { gif: "images/fish_looking.gif", correctWho: "The fish", whoImg: "symbols/fish.png", correctDoing: "is looking", doingImg: "symbols/look.png", distWho: "The octopus", distWhoImg: "symbols/octopus.png", distDoing: "is dancing", distDoingImg: "symbols/dance.png" },
-             { gif: "images/man_cutting.gif", correctWho: "The man", whoImg: "symbols/man.png", correctDoing: "is cutting", doingImg: "symbols/cut.png", distWho: "The woman", distWhoImg: "symbols/woman.png", distDoing: "is holding", distDoingImg: "symbols/hold.png" },
-             { gif: "images/man_washing.gif", correctWho: "The man", whoImg: "symbols/man.png", correctDoing: "is washing", doingImg: "symbols/wash.png", distWho: "The baby", distWhoImg: "symbols/baby.png", distDoing: "is crying", distDoingImg: "symbols/cry.png" },
-             { gif: "images/girl_reading.gif", correctWho: "The girl", whoImg: "symbols/girl.png", correctDoing: "is reading", doingImg: "symbols/read.png", distWho: "The cat", distWhoImg: "symbols/cat.png", distDoing: "is flying", distDoingImg: "symbols/fly.png" },
-             { gif: "images/woman_watching.gif", correctWho: "The woman", whoImg: "symbols/woman.png", correctDoing: "is watching", doingImg: "symbols/watch.png", distWho: "The girl", distWhoImg: "symbols/girl.png", distDoing: "is looking", distDoingImg: "symbols/look.png" },
-             { gif: "images/raccoon_walking.gif", correctWho: "The raccoon", whoImg: "symbols/raccoon.png", correctDoing: "is walking", doingImg: "symbols/walk.png", distWho: "The dog", distWhoImg: "symbols/dog.png", distDoing: "is jumping", distDoingImg: "symbols/jump.png" },
-             { gif: "images/dog_drinking.gif", correctWho: "The dog", whoImg: "symbols/dog.png", correctDoing: "is drinking", doingImg: "symbols/drink.png", distWho: "The cat", distWhoImg: "symbols/cat.png", distDoing: "is eating", distDoingImg: "symbols/eat.png" },
-             { gif: "images/man_jumping.gif", correctWho: "The man", whoImg: "symbols/man.png", correctDoing: "is jumping", doingImg: "symbols/jump.png", distWho: "The boy", distWhoImg: "symbols/boy.png", distDoing: "is running", distDoingImg: "symbols/run.png" },
-             { gif: "images/cat_running.gif", correctWho: "The cat", whoImg: "symbols/cat.png", correctDoing: "is running", doingImg: "symbols/run.png", distWho: "The bird", distWhoImg: "symbols/bird.png", distDoing: "is walking", distDoingImg: "symbols/walk.png" }
+             { gif: "images/dog_smelling.gif", correctWho: "The dog", whoImg: "symbols/dog.png", correctDoing: "is smelling", doingImg: "symbols/smell.png" },
+             { gif: "images/girl_running.gif", correctWho: "The girl", whoImg: "symbols/girl.png", correctDoing: "is running", doingImg: "symbols/run.png" },
+             { gif: "images/cat_jumping.gif", correctWho: "The cat", whoImg: "symbols/cat.png", correctDoing: "is jumping", doingImg: "symbols/jump.png" },
+             { gif: "images/boy_eating.gif", correctWho: "The boy", whoImg: "symbols/boy.png", correctDoing: "is eating", doingImg: "symbols/eat.png" },
+             { gif: "images/baby_crying.gif", correctWho: "The baby", whoImg: "symbols/baby.png", correctDoing: "is crying", doingImg: "symbols/cry.png" },
+             { gif: "images/bird_flying.gif", correctWho: "The bird", whoImg: "symbols/bird.png", correctDoing: "is flying", doingImg: "symbols/fly.png" },
+             { gif: "images/fish_looking.gif", correctWho: "The fish", whoImg: "symbols/fish.png", correctDoing: "is looking", doingImg: "symbols/look.png" },
+             { gif: "images/man_cutting.gif", correctWho: "The man", whoImg: "symbols/man.png", correctDoing: "is cutting", doingImg: "symbols/cut.png" },
+             { gif: "images/man_washing.gif", correctWho: "The man", whoImg: "symbols/man.png", correctDoing: "is washing", doingImg: "symbols/wash.png" },
+             { gif: "images/girl_reading.gif", correctWho: "The girl", whoImg: "symbols/girl.png", correctDoing: "is reading", doingImg: "symbols/read.png" },
+             { gif: "images/woman_watching.gif", correctWho: "The woman", whoImg: "symbols/woman.png", correctDoing: "is watching", doingImg: "symbols/watch.png" },
+             { gif: "images/raccoon_walking.gif", correctWho: "The raccoon", whoImg: "symbols/raccoon.png", correctDoing: "is walking", doingImg: "symbols/walk.png" },
+             { gif: "images/dog_drinking.gif", correctWho: "The dog", whoImg: "symbols/dog.png", correctDoing: "is drinking", doingImg: "symbols/drink.png" },
+             { gif: "images/man_jumping.gif", correctWho: "The man", whoImg: "symbols/man.png", correctDoing: "is jumping", doingImg: "symbols/jump.png" },
+             { gif: "images/cat_running.gif", correctWho: "The cat", whoImg: "symbols/cat.png", correctDoing: "is running", doingImg: "symbols/run.png" }
         ];
 
         let currentIndex = 0, score = 0, trialLog = [];
@@ -224,28 +203,39 @@
             document.getElementById('check-btn').style.display = "inline-block"; document.getElementById('next-btn').style.display = "none";
             document.getElementById('dance-overlay').style.display = "none";
             
+            // STRICT UNIQUENESS LOGIC
             let items = [{ text: trial.correctWho, type: "who", img: trial.whoImg }, { text: trial.correctDoing, type: "doing", img: trial.doingImg }];
+            let seenTexts = new Set([trial.correctWho, trial.correctDoing]);
             
             const conflicts = [ ['The woman', 'The girl'], ['The man', 'The boy'] ];
-            function isConflicting(text, existingItems) {
+            function isConflicting(text, currentItems) {
                 for (let pair of conflicts) {
                     if (pair.includes(text)) {
                         const otherHalf = pair.find(t => t !== text);
-                        if (existingItems.some(i => i.text === otherHalf)) return true;
+                        if (currentItems.some(i => i.text === otherHalf)) return true;
                     }
                 }
                 return false;
             }
 
+            // Create a pool of all possible distractors
             let distractorPool = [];
-            trialsData.forEach((t) => { distractorPool.push({ text: t.correctWho, type: "who", img: t.whoImg }); distractorPool.push({ text: t.correctDoing, type: "doing", img: t.doingImg }); });
-            const correctTexts = items.map(i => i.text);
-            const filteredPool = distractorPool.filter(d => !correctTexts.includes(d.text)).sort(() => Math.random() - 0.5);
+            trialsData.forEach((t) => {
+                distractorPool.push({ text: t.correctWho, type: "who", img: t.whoImg });
+                distractorPool.push({ text: t.correctDoing, type: "doing", img: t.doingImg });
+            });
+            distractorPool.sort(() => Math.random() - 0.5);
 
             let addedFoils = 0;
-            for (let candidate of filteredPool) {
+            for (let candidate of distractorPool) {
                 if (addedFoils >= numFoils) break;
-                if (!isConflicting(candidate.text, items)) { items.push(candidate); addedFoils++; }
+                // Check 1: Text is not already used in this trial
+                // Check 2: Doesn't create a "Smart Pair" conflict
+                if (!seenTexts.has(candidate.text) && !isConflicting(candidate.text, items)) {
+                    items.push(candidate);
+                    seenTexts.add(candidate.text);
+                    addedFoils++;
+                }
             }
 
             const bank = document.getElementById('word-bank'); bank.innerHTML = "";

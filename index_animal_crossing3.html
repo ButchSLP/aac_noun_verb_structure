@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AAC Noun + Verb - Animal Crossing Edition</title>
+    <script src="https://bernardo-castilho.github.io/DragDropTouch/DragDropTouch.js"></script>
+    <style>
+        /* Animal Crossing Palette */
+        html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; background: #e8f5e9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; touch-action: none; }
+        body { display: flex; align-items: center; justify-content: center; padding: 5px; box-sizing: border-box; }
+        
+        /* HOME BUTTON CSS */
+        #home-link {
+            position: absolute; top: 15px; left: 15px; background: white; padding: 0;
+            border-radius: 50%; box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-decoration: none;
+            font-size: 24px; z-index: 4000; display: flex; align-items: center; justify-content: center;
+            width: 50px; height: 50px; border: 4px solid #a5d6a7; transition: transform 0.2s;
+        }
+        #home-link:hover { transform: scale(1.1); }
+
+        #game-container, #result-screen { 
+            width: 100%; max-width: 1200px; height: 98vh; background: white; 
+            padding: 15px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
+            display: flex; flex-direction: column; box-sizing: border-box; 
+            position: relative; overflow: hidden; border: 6px solid #a5d6a7;
+        }
+
+        .hidden { display: none !important; }
+
+        #progress-container { display: flex; align-items: center; justify-content: center; gap: 5px; margin-bottom: 10px; background: #f1f8e9; padding: 10px; border-radius: 12px; flex-shrink: 0; flex-wrap: wrap; }
+        .progress-node { width: 20px; height: 20px; border-radius: 50%; background: #fff; border: 2px solid #c8e6c9; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: bold; color: #81c784; }
+        .node-active { border-color: #4caf50; background: #fff; box-shadow: 0 0 8px rgba(76, 175, 80, 0.5); transform: scale(1.1); color: #2e7d32; }
+        .node-complete { background: #4caf50; border-color: #2e7d32; color: white; }
+        .score-display { margin-left: 10px; font-weight: bold; color: #2e7d32; font-size: 0.9rem; }
+
+        #main-content { display: flex; flex-direction: row; gap: 15px; flex-grow: 1; min-height: 0; }
+        #gif-container { flex: 1.2; background: #fafafa; border-radius: 15px; display: flex; align-items: center; justify-content: center; border: 2px solid #e0e0e0; overflow: hidden; }
+        #trial-gif { max-width: 100%; max-height: 100%; object-fit: contain; }
+        
+        #workspace { flex: 1; display: flex; flex-direction: column; gap: 8px; min-width: 300px; min-height: 0; }
+        #drop-zone { flex-shrink: 0; display: flex; gap: 8px; padding: 10px; background: #fff; border: 3px dashed #81c784; min-height: 110px; border-radius: 15px; justify-content: center; align-items: center; }
+        .bank { flex-grow: 1; display: flex; gap: 8px; justify-content: center; align-content: center; flex-wrap: wrap; padding: 10px; background: #f9fdf9; border-radius: 10px; border: 2px solid #edf7ed; overflow-y: auto; }
+        
+        .symbol { padding: 3px; border-radius: 10px; cursor: grab; font-weight: bold; width: 110px; height: 95px; font-size: 0.8rem; box-shadow: 0 3px 5px rgba(0,0,0,0.1); text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: space-between; box-sizing: border-box; background: #fdfdfd; }
+        .symbol img { width: 60px; height: 60px; object-fit: contain; margin-top: 2px; pointer-events: none; }
+        .who { border: 4px solid #fff176; } 
+        .doing { border: 4px solid #81c784; } 
+        .dragging { opacity: 0.3; }
+
+        #feedback { font-weight: bold; font-size: 1.1rem; height: 25px; text-align: center; margin: 2px 0; }
+        .action-area { display: flex; justify-content: center; padding-bottom: 5px; flex-shrink: 0; }
+        button { padding: 10px 25px; font-size: 0.9rem; cursor: pointer; border-radius: 50px; border: none; font-weight: bold; }
+        #check-btn { background: #4db6ac; color: white; }
+        #next-btn { background: #81c784; color: white; display: none; }
+
+        #dance-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1500; display: none; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; border-radius: 20px; pointer-events: auto; }
+        #celebration-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.98); z-index: 5000; display: none; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; transition: opacity 1.5s ease; }
+        .funky-pulse { animation: acBackground 3s infinite; }
+        @keyframes acBackground { 0% { background-color: rgba(129, 199, 132, 0.9); } 50% { background-color: rgba(77, 182, 172, 0.9); } 100% { background-color: rgba(129, 199, 132, 0.9); } }
+        #dance-gif, #celebration-gif { max-width: 90%; max-height: 80%; border-radius: 20px; border: 8px solid white; box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th { background: #f1f8e9; padding: 12px; border-bottom: 2px solid #a5d6a7; text-align: left; color: #2e7d32; font-size: 0.9rem; }
+        td { padding: 10px; border-bottom: 1px solid #eee; color: #2c3e50; font-size: 0.85rem; }
+
+        #audio-unlock-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: linear-gradient(-45deg, #81c784, #4db6ac, #a5d6a7); background-size: 400% 400%; animation: gradientBG 10s ease infinite; color: white; z-index: 3000; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+        @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        .card { background: rgba(255, 255, 255, 0.2); padding: 30px; border-radius: 30px; backdrop-filter: blur(12px); border: 2px solid rgba(255, 255, 255, 0.3); width: 340px; }
+        #settings-modal { display: none; position: absolute; background: white; color: #333; padding: 20px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); z-index: 3500; width: 300px; }
+    </style>
+</head>
+<body>
+
+    <a href="index.html" id="home-link" title="Back to Menu">🏠</a>
+
+    <div id="audio-unlock-overlay">
+        <div class="card" id="start-card">
+            <h1>🍃 Island Session</h1>
+            <p>Ready to help your villagers?</p>
+            <button style="background: white; color: #2e7d32; font-size: 1.8rem; padding: 15px 45px; border-radius: 100px; border: none; cursor: pointer; font-weight: bold;" onclick="startApp()">START</button>
+            <br>
+            <button onclick="toggleSettings()" style="background:none; border:2px solid white; color:white; margin-top:15px; padding:8px 20px; border-radius:20px; font-size:0.8rem; cursor:pointer;">⚙ Settings</button>
+        </div>
+        <div id="settings-modal">
+            <h3>Session Settings</h3>
+            <div style="display:flex; justify-content:space-between; font-weight:bold; margin-top:10px;">
+                <span>Number of Trials:</span>
+                <span id="trial-count-val" style="color:#2e7d32;">15</span>
+            </div>
+            <input type="range" id="trial-slider" min="5" max="20" step="5" value="15" oninput="updateTrialText(this.value)" style="width:100%; margin:10px 0;">
+            <div style="display:flex; justify-content:space-between; font-weight:bold; margin-top:10px;">
+                <span>Number of Foils:</span>
+                <span id="foil-val" style="color:#2e7d32;">2</span>
+            </div>
+            <input type="range" id="foil-slider" min="0" max="3" value="2" oninput="updateFoilText(this.value)" style="width:100%; margin:10px 0;">
+            <button onclick="toggleSettings()" style="background:#2e7d32; color:white; width:100%; padding:10px; border-radius:10px; border:none; font-weight:bold; margin-top:10px;">Save & Close</button>
+        </div>
+    </div>
+
+    <div id="dance-overlay" onclick="nextTrial()">
+        <img id="dance-gif" src="" alt="Dancing animal">
+    </div>
+
+    <div id="celebration-overlay">
+        <h1 style="color:#2e7d32; font-size: 3rem; margin-bottom:10px;">FANTASTIC!</h1>
+        <img id="celebration-gif" src="images/kk_celebration.gif" alt="Celebration!">
+    </div>
+
+    <div id="game-container">
+        <div id="progress-container">
+            <div class="score-display">Score: <span id="score-val">0</span></div>
+        </div>
+        <div id="main-content">
+            <div id="gif-container"><img id="trial-gif" src="" alt="Loading..."></div>
+            <div id="workspace">
+                <div id="drop-zone"></div>
+                <div class="bank" id="word-bank"></div>
+                <div id="feedback"></div>
+                <div class="action-area">
+                    <button id="check-btn" onclick="checkAnswer()">Check Answer</button>
+                    <button id="next-btn" onclick="nextTrial()">Next Trial &rarr;</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="result-screen" class="hidden">
+        <div style="text-align:center; padding: 10px;">
+            <h1 style="margin: 0; color: #2e7d32; font-size: 1.5rem;">Island Summary</h1>
+            <div style="font-size: 2.5rem; color: #4db6ac; font-weight:bold;" id="final-pct">0%</div>
+        </div>
+        <div style="flex-grow: 1; overflow-y: auto;">
+            <table>
+                <thead>
+                    <tr><th>Trial</th><th>Target Sentence</th><th>Result</th></tr>
+                </thead>
+                <tbody id="log-body"></tbody>
+            </table>
+        </div>
+        <button onclick="location.reload()" style="background:#2e7d32; color:white; margin:10px auto; padding:12px 40px; border-radius:30px; display:block; font-size:1.1rem; border:none;">Play Again</button>
+    </div>
+
+    <script>
+        let numFoils = 2;
+        let totalTrialsRequested = 15;
+        let sessionTrials = [];
+        const sounds = { 
+            drop: new Audio('sounds/drop.mp3'), 
+            incorrect: new Audio('sounds/incorrect_answer.mp3'), 
+            celebration: new Audio('sounds/animal_crossing_celebration.mp3'), 
+            ac1: new Audio('sounds/animal_cross_song_one.mp3'), 
+            ac2: new Audio('sounds/animal_cross_song_two.mp3'), 
+            ac3: new Audio('sounds/animal_cross_song_three.mp3') 
+        };
+        const danceGifs = ['images/animal_crossing_one.gif', 'images/animal_crossing_two.gif', 'images/animal_crossing_three.gif', 'images/animal_crossing_four.gif', 'images/animal_crossing_five.gif'];
+        const rewardKeys = ['ac1', 'ac2', 'ac3'];
+        let activeSound = null, globalTrialId = 0, danceFader = null;
+
+        const trialsData = [
+             { gif: "images/dog_smelling.gif", correctWho: "The dog", whoImg: "symbols/dog.png", correctDoing: "is smelling", doingImg: "symbols/smell.png" },
+             { gif: "images/girl_running.gif", correctWho: "The girl", whoImg: "symbols/girl.png", correctDoing: "is running", doingImg: "symbols/run.png" },
+             { gif: "images/cat_jumping.gif", correctWho: "The cat", whoImg: "symbols/cat.png", correctDoing: "is jumping", doingImg: "symbols/jump.png" },
+             { gif: "images/boy_eating.gif", correctWho: "The boy", whoImg: "symbols/boy.png", correctDoing: "is eating", doingImg: "symbols/eat.png" },
+             { gif: "images/baby_crying.gif", correctWho: "The baby", whoImg: "symbols/baby.png", correctDoing: "is crying", doingImg: "symbols/cry.png" },
+             { gif: "images/bird_flying.gif", correctWho: "The bird", whoImg: "symbols/bird.png", correctDoing: "is flying", doingImg: "symbols/fly.png" },
+             { gif: "images/fish_looking.gif", correctWho: "The fish", whoImg: "symbols/fish.png", correctDoing: "is looking", doingImg: "symbols/look.png" },
+             { gif: "images/man_cutting.gif", correctWho: "The man", whoImg: "symbols/man.png", correctDoing: "is cutting", doingImg: "symbols/cut.png" },
+             { gif: "images/man_washing.gif", correctWho: "The man", whoImg: "symbols/man.png", correctDoing: "is washing", doingImg: "symbols/wash.png" },
+             { gif: "images/girl_reading.gif", correctWho: "The girl", whoImg: "symbols/girl.png", correctDoing: "is reading", doingImg: "symbols/read.png" },
+             { gif: "images/woman_watching.gif", correctWho: "The woman", whoImg: "symbols/woman.png", correctDoing: "is watching", doingImg: "symbols/watch.png" },
+             { gif: "images/raccoon_walking.gif", correctWho: "The raccoon", whoImg: "symbols/raccoon.png", correctDoing: "is walking", doingImg: "symbols/walk.png" },
+             { gif: "images/dog_drinking.gif", correctWho: "The dog", whoImg: "symbols/dog.png", correctDoing: "is drinking", doingImg: "symbols/drink.png" },
+             { gif: "images/man_jumping.gif", correctWho: "The man", whoImg: "symbols/man.png", correctDoing: "is jumping", doingImg: "symbols/jump.png" },
+             { gif: "images/cat_running.gif", correctWho: "The cat", whoImg: "symbols/cat.png", correctDoing: "is running", doingImg: "symbols/run.png" }
+        ];
+
+        let currentIndex = 0, score = 0, trialLog = [];
+
+        function toggleSettings() { const m = document.getElementById('settings-modal'); m.style.display = (m.style.display === 'block') ? 'none' : 'block'; }
+        function updateFoilText(val) { numFoils = parseInt(val); document.getElementById('foil-val').innerText = val; }
+        function updateTrialText(val) { totalTrialsRequested = parseInt(val); document.getElementById('trial-count-val').innerText = val; }
+
+        function startApp() {
+            let pool = [...trialsData].sort(() => Math.random() - 0.5);
+            sessionTrials = pool.slice(0, totalTrialsRequested);
+            while (sessionTrials.length < totalTrialsRequested) { sessionTrials.push(trialsData[Math.floor(Math.random() * trialsData.length)]); }
+            sessionTrials.sort(() => Math.random() - 0.5);
+            const pContainer = document.getElementById('progress-container');
+            const scoreDisplay = pContainer.querySelector('.score-display');
+            pContainer.innerHTML = "";
+            for(let i=0; i<totalTrialsRequested; i++) {
+                const node = document.createElement('div'); node.className = "progress-node"; node.id = `node-${i}`; node.innerText = i+1;
+                pContainer.appendChild(node);
+            }
+            pContainer.appendChild(scoreDisplay);
+            for (let key in sounds) { sounds[key].volume = 0; sounds[key].play().then(() => { sounds[key].pause(); sounds[key].currentTime = 0; sounds[key].volume = 1.0; }).catch(() => {}); }
+            window.speechSynthesis.cancel();
+            document.getElementById('audio-unlock-overlay').style.display = 'none';
+            loadTrial();
+        }
+
+        function speak(text, callback) {
+            window.speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); const id = globalTrialId;
+            if (callback) u.onend = () => { if (id === globalTrialId) callback(); };
+            window.speechSynthesis.speak(u);
+        }
+
+        function loadTrial() {
+            const nodes = document.querySelectorAll('.progress-node');
+            nodes.forEach((n, i) => { n.classList.remove('node-active'); if (i === currentIndex) n.classList.add('node-active'); });
+            const trial = sessionTrials[currentIndex];
+            document.getElementById('trial-gif').src = trial.gif;
+            document.getElementById('drop-zone').innerHTML = ""; document.getElementById('feedback').innerText = "";
+            document.getElementById('check-btn').style.display = "inline-block"; document.getElementById('next-btn').style.display = "none";
+            document.getElementById('dance-overlay').style.display = "none";
+            
+            let items = [{ text: trial.correctWho, type: "who", img: trial.whoImg }, { text: trial.correctDoing, type: "doing", img: trial.doingImg }];
+            let seenTexts = new Set([trial.correctWho, trial.correctDoing]);
+            
+            let distractorPool = [];
+            trialsData.forEach((t) => {
+                distractorPool.push({ text: t.correctWho, type: "who", img: t.whoImg });
+                distractorPool.push({ text: t.correctDoing, type: "doing", img: t.doingImg });
+            });
+            distractorPool.sort(() => Math.random() - 0.5);
+
+            let addedFoils = 0;
+            for (let candidate of distractorPool) {
+                if (addedFoils >= numFoils) break;
+                if (!seenTexts.has(candidate.text)) {
+                    items.push(candidate);
+                    seenTexts.add(candidate.text);
+                    addedFoils++;
+                }
+            }
+
+            const bank = document.getElementById('word-bank'); bank.innerHTML = "";
+            items.sort(() => Math.random() - 0.5).forEach(item => {
+                const div = document.createElement('div');
+                div.className = `symbol ${item.type}`; div.draggable = true; div.dataset.text = item.text;
+                div.innerHTML = `<img src="${item.img}"><span>${item.text}</span>`;
+                div.onpointerdown = function() { speak(item.text); };
+                div.addEventListener('dragstart', (e) => e.target.classList.add('dragging'));
+                div.addEventListener('dragend', (e) => { e.target.classList.remove('dragging'); if (e.target.parentElement.id === "drop-zone") { sounds.drop.currentTime = 0; sounds.drop.play(); } });
+                bank.appendChild(div);
+            });
+        }
+
+        const dropZone = document.getElementById('drop-zone');
+        const wordBank = document.getElementById('word-bank');
+        [dropZone, wordBank].forEach(zone => { zone.addEventListener('dragover', e => e.preventDefault()); zone.addEventListener('drop', e => { const d = document.querySelector('.dragging'); if (d) zone.appendChild(d); }); });
+
+        function checkAnswer() {
+            const placed = Array.from(dropZone.children);
+            const trial = sessionTrials[currentIndex];
+            const isCorrect = (placed.length === 2) && (placed[0].dataset.text === trial.correctWho) && (placed[1].dataset.text === trial.correctDoing);
+            trialLog.push({ trialNum: currentIndex + 1, targetSentence: `${trial.correctWho} ${trial.correctDoing}`, status: isCorrect ? "Pass" : "Fail" });
+            
+            if (isCorrect) {
+                document.getElementById('feedback').innerText = "✔ Correct!"; document.getElementById('feedback').style.color = "#4caf50";
+                score++; document.getElementById('score-val').innerText = score; document.getElementById(`node-${currentIndex}`).classList.add('node-complete');
+                
+                const rand = rewardKeys[Math.floor(Math.random() * rewardKeys.length)]; 
+                activeSound = sounds[rand]; 
+                activeSound.volume = 1.0; 
+                activeSound.currentTime = 0; 
+
+                speak(placed.map(n => n.dataset.text).join(" "), () => {
+                    const overlay = document.getElementById('dance-overlay'); const img = document.getElementById('dance-gif');
+                    img.src = danceGifs[Math.floor(Math.random() * danceGifs.length)] + "?t=" + Date.now();
+                    overlay.style.display = "flex"; overlay.classList.add('funky-pulse');
+                    activeSound.play();
+                    danceFader = setTimeout(() => fadeOutActiveSound(overlay), 6000);
+                });
+            } else {
+                document.getElementById('feedback').innerText = "✘ Try again!"; document.getElementById('feedback').style.color = "#e74c3c";
+                sounds.incorrect.currentTime = 0; sounds.incorrect.play();
+            }
+            document.getElementById('check-btn').style.display = "none"; document.getElementById('next-btn').style.display = "inline-block";
+        }
+
+        function fadeOutActiveSound(overlayElement) { if (!activeSound) return; let vol = 1.0; const f = setInterval(() => { if (vol > 0.1) { vol -= 0.1; activeSound.volume = vol; } else { clearInterval(f); activeSound.pause(); overlayElement.style.display = "none"; overlayElement.classList.remove('funky-pulse'); } }, 150); }
+
+        function nextTrial() { 
+            globalTrialId++; window.speechSynthesis.cancel(); clearTimeout(danceFader); document.getElementById('dance-overlay').style.display = "none";
+            if (activeSound) { activeSound.pause(); activeSound = null; }
+            currentIndex++; if (currentIndex < totalTrialsRequested) loadTrial(); else showResults(); 
+        }
+
+        function showResults() {
+            document.getElementById('game-container').classList.add('hidden'); 
+            document.getElementById('result-screen').classList.remove('hidden');
+            document.getElementById('final-pct').innerText = Math.round(score / totalTrialsRequested * 100) + "%";
+            document.getElementById('log-body').innerHTML = trialLog.map(t => `<tr><td>${t.trialNum}</td><td>${t.targetSentence}</td><td style="color:${t.status==='Pass'?'#2ecc71':'#e74c3c'}; font-weight:bold;">${t.status}</td></tr>`).join("");
+            
+            if (score / totalTrialsRequested >= 0.8) {
+                const cOverlay = document.getElementById('celebration-overlay');
+                cOverlay.style.display = 'flex'; cOverlay.style.opacity = '1';
+                sounds.celebration.currentTime = 0; sounds.celebration.play();
+                setTimeout(() => { cOverlay.style.opacity = '0'; setTimeout(() => { cOverlay.style.display = 'none'; }, 1500); }, 5000);
+            }
+        }
+    </script>
+</body>
+</html>

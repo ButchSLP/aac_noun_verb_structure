@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AAC Activity Hub</title>
+    <style>
+        body {
+            background: #f0f2f5;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        h1 { color: #2c3e50; margin-bottom: 40px; font-size: 2.5rem; }
+        .menu-container { display: flex; gap: 40px; flex-wrap: wrap; justify-content: center; }
+        .card {
+            width: 300px;
+            padding: 25px;
+            background: white;
+            border-radius: 30px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            text-decoration: none;
+            color: inherit;
+            border: 6px solid transparent;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .card:hover { transform: translateY(-15px); box-shadow: 0 20px 40px rgba(0,0,0,0.15); }
+        .ac-card { border-color: #a5d6a7; }
+        .funky-card { border-color: #3498db; }
+        .card img { width: 180px; height: 180px; border-radius: 20px; object-fit: cover; margin-bottom: 20px; border: 4px solid #eee; }
+        .card h2 { margin: 10px 0; color: #2c3e50; }
+        .card p { color: #636e72; font-size: 0.95rem; line-height: 1.4; }
+    </style>
+</head>
+<body>
+
+    <h1>Pick Your Adventure!</h1>
+
+    <div class="menu-container">
+        <a href="index_animal_crossing3.html" class="card ac-card">
+            <img src="images/kk_celebration.gif" alt="Animal Crossing">
+            <h2>🍃 Island Session</h2>
+            <p>Relaxing Animal Crossing vibes, K.K. Slider music, and village friends.</p>
+        </a>
+
+        <a href="index_dance_party.html" class="card funky-card">
+            <img src="images/dancing_cartoon.gif" alt="Funky Music">
+            <h2>🕺 Dance Party</h2>
+            <p>High energy, funky beats, and party animations with colorful themes!</p>
+        </a>
+    </div>
+
+</body>
+</html>

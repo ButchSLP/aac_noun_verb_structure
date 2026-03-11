@@ -9,6 +9,15 @@
         html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; background: #e8f5e9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; touch-action: none; }
         body { display: flex; align-items: center; justify-content: center; padding: 5px; box-sizing: border-box; }
         
+        /* Prevent selection and ghosting */
+        body, #game-container, .symbol, .bank, #drop-zone, #workspace {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        img { -webkit-user-drag: none; }
+
         /* HOME BUTTON CSS */
         #home-link {
             position: absolute; top: 15px; left: 15px; background: white; padding: 0;
@@ -35,7 +44,7 @@
 
         #main-content { display: flex; flex-direction: row; gap: 15px; flex-grow: 1; min-height: 0; }
         #gif-container { flex: 1.2; background: #fafafa; border-radius: 15px; display: flex; align-items: center; justify-content: center; border: 2px solid #e0e0e0; overflow: hidden; }
-        #trial-gif { max-width: 100%; max-height: 100%; object-fit: contain; }
+        #trial-gif { max-width: 100%; max-height: 100%; object-fit: contain; pointer-events: none; }
         
         #workspace { flex: 1; display: flex; flex-direction: column; gap: 8px; min-width: 300px; min-height: 0; }
         #drop-zone { flex-shrink: 0; display: flex; gap: 8px; padding: 10px; background: #fff; border: 3px dashed #81c784; min-height: 110px; border-radius: 15px; justify-content: center; align-items: center; }
@@ -43,6 +52,7 @@
         
         .symbol { padding: 3px; border-radius: 10px; cursor: grab; font-weight: bold; width: 110px; height: 95px; font-size: 0.8rem; box-shadow: 0 3px 5px rgba(0,0,0,0.1); text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: space-between; box-sizing: border-box; background: #fdfdfd; }
         .symbol img { width: 60px; height: 60px; object-fit: contain; margin-top: 2px; pointer-events: none; }
+        .symbol span { pointer-events: none; }
         .who { border: 4px solid #fff176; } 
         .doing { border: 4px solid #81c784; } 
         .dragging { opacity: 0.3; }
@@ -57,7 +67,7 @@
         #celebration-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.98); z-index: 5000; display: none; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; transition: opacity 1.5s ease; }
         .funky-pulse { animation: acBackground 3s infinite; }
         @keyframes acBackground { 0% { background-color: rgba(129, 199, 132, 0.9); } 50% { background-color: rgba(77, 182, 172, 0.9); } 100% { background-color: rgba(129, 199, 132, 0.9); } }
-        #dance-gif, #celebration-gif { max-width: 90%; max-height: 80%; border-radius: 20px; border: 8px solid white; box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
+        #dance-gif, #celebration-gif { max-width: 90%; max-height: 80%; border-radius: 20px; border: 8px solid white; box-shadow: 0 10px 40px rgba(0,0,0,0.3); pointer-events: none; }
 
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         th { background: #f1f8e9; padding: 12px; border-bottom: 2px solid #a5d6a7; text-align: left; color: #2e7d32; font-size: 0.9rem; }
@@ -98,12 +108,12 @@
     </div>
 
     <div id="dance-overlay" onclick="nextTrial()">
-        <img id="dance-gif" src="" alt="Dancing animal">
+        <img id="dance-gif" src="" alt="Dancing animal" draggable="false">
     </div>
 
     <div id="celebration-overlay">
         <h1 style="color:#2e7d32; font-size: 3rem; margin-bottom:10px;">FANTASTIC!</h1>
-        <img id="celebration-gif" src="images/kk_celebration.gif" alt="Celebration!">
+        <img id="celebration-gif" src="images/kk_celebration.gif" alt="Celebration!" draggable="false">
     </div>
 
     <div id="game-container">
@@ -111,7 +121,7 @@
             <div class="score-display">Score: <span id="score-val">0</span></div>
         </div>
         <div id="main-content">
-            <div id="gif-container"><img id="trial-gif" src="" alt="Loading..."></div>
+            <div id="gif-container"><img id="trial-gif" src="" alt="Loading..." draggable="false"></div>
             <div id="workspace">
                 <div id="drop-zone"></div>
                 <div class="bank" id="word-bank"></div>
@@ -238,7 +248,7 @@
             items.sort(() => Math.random() - 0.5).forEach(item => {
                 const div = document.createElement('div');
                 div.className = `symbol ${item.type}`; div.draggable = true; div.dataset.text = item.text;
-                div.innerHTML = `<img src="${item.img}"><span>${item.text}</span>`;
+                div.innerHTML = `<img src="${item.img}" draggable="false"><span draggable="false">${item.text}</span>`;
                 div.onpointerdown = function() { speak(item.text); };
                 div.addEventListener('dragstart', (e) => e.target.classList.add('dragging'));
                 div.addEventListener('dragend', (e) => { e.target.classList.remove('dragging'); if (e.target.parentElement.id === "drop-zone") { sounds.drop.currentTime = 0; sounds.drop.play(); } });

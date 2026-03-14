@@ -204,7 +204,7 @@
             }
             pContainer.appendChild(scoreDisplay);
             for (let key in sounds) { sounds[key].volume = 0; sounds[key].play().then(() => { sounds[key].pause(); sounds[key].currentTime = 0; sounds[key].volume = 1.0; }).catch(() => {}); }
-            window.speechSynthesis.cancel();
+            window.speechSynthesis.cancel(); window.speechSynthesis.speak(new SpeechSynthesisUtterance(" "));
             document.getElementById('audio-unlock-overlay').style.display = 'none';
             loadTrial();
         }

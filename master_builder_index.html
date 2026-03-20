@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AAC Noun + Verb - Lego Edition</title>
+    <script src="https://bernardo-castilho.github.io/DragDropTouch/DragDropTouch.js"></script>
+    <style>
+        /* Lego Primary Palette */
+        html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; background: #005596; font-family: 'Segoe UI', Arial, sans-serif; touch-action: none; }
+        body { display: flex; align-items: center; justify-content: center; padding: 5px; box-sizing: border-box; }
+        
+        /* Prevent selection */
+        body, #game-container, .symbol, .bank, #drop-zone, #workspace {
+            -webkit-user-select: none; user-select: none;
+        }
+        img { -webkit-user-drag: none; }
+
+        /* HOME BUTTON */
+        #home-link {
+            position: absolute; top: 15px; left: 15px; background: #FFD500; padding: 0;
+            border-radius: 12px; box-shadow: 0 4px 0px #b39500; text-decoration: none;
+            font-size: 24px; z-index: 4000; display: flex; align-items: center; justify-content: center;
+            width: 50px; height: 50px; border: 4px solid #fff; transition: transform 0.2s;
+        }
+        #home-link:hover { transform: scale(1.1); }
+
+        #game-container, #result-screen { 
+            width: 100%; max-width: 1200px; height: 98vh; background: #f0f0f0; 
+            padding: 15px; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); 
+            display: flex; flex-direction: column; box-sizing: border-box; 
+            position: relative; overflow: hidden; border: 8px solid #FFD500;
+        }
+
+        .hidden { display: none !important; }
+
+        #progress-container { display: flex; align-items: center; justify-content: center; gap: 5px; margin-bottom: 10px; background: #fff; padding: 10px; border-radius: 0; border-bottom: 4px solid #E3000B; flex-shrink: 0; flex-wrap: wrap; }
+        .progress-node { width: 22px; height: 22px; background: #ccc; border: 2px solid #999; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: bold; color: #666; }
+        .node-active { border-color: #005596; background: #fff; box-shadow: 0 0 8px rgba(0, 85, 150, 0.5); transform: scale(1.1); color: #005596; }
+        .node-complete { background: #E3000B; border-color: #900007; color: white; }
+        .score-display { margin-left: 10px; font-weight: bold; color: #005596; font-size: 1rem; text-transform: uppercase; }
+
+        #main-content { display: flex; flex-direction: row; gap: 15px; flex-grow: 1; min-height: 0; }
+        #gif-container { flex: 1.2; background: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; border: 4px solid #005596; overflow: hidden; }
+        #trial-gif { max-width: 100%; max-height: 100%; object-fit: contain; }
+        
+        #workspace { flex: 1; display: flex; flex-direction: column; gap: 8px; min-width: 300px; }
+        #drop-zone { flex-shrink: 0; display: flex; gap: 15px; padding: 20px 10px 10px 10px; background: #fff; border: 4px dashed #E3000B; min-height: 130px; border-radius: 8px; justify-content: center; align-items: center; }
+        .bank { flex-grow: 1; display: flex; gap: 15px; justify-content: center; align-content: center; flex-wrap: wrap; padding: 25px 10px 10px 10px; background: #e0e0e0; border-radius: 8px; overflow-y: auto; }
+        
+        /* LEGO BRICK SYMBOLS */
+        .symbol { 
+            position: relative; /* Needed for studs */
+            margin-top: 10px;   /* Room for studs to show */
+            padding: 5px; 
+            border-radius: 6px; 
+            cursor: grab; 
+            font-weight: bold; 
+            width: 110px; 
+            height: 105px; 
+            font-size: 0.85rem; 
+            box-shadow: 0 6px 0 rgba(0,0,0,0.2); 
+            text-align: center; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: space-between; 
+            box-sizing: border-box; 
+            background: #fff; 
+            transition: transform 0.1s;
+        }
+        .symbol:active { transform: translateY(2px); }
+        .symbol img { width: 60px; height: 60px; object-fit: contain; }
+
+        /* The Lego Studs (Circles on top) */
+        .symbol::before {
+            content: "";
+            position: absolute;
+            top: -12px;
+            left: 12px;
+            right: 12px;
+            height: 12px;
+            background-repeat: repeat-x;
+            background-size: 30px 12px;
+        }
+
+        .who { border: 5px solid #FFD500; } 
+        .who::before { background-image: radial-gradient(circle, #FFD500 80%, transparent 81%); }
+
+        .doing { border: 5px solid #005596; } 
+        .doing::before { background-image: radial-gradient(circle, #005596 80%, transparent 81%); }
+
+        .dragging { opacity: 0.3; }
+
+        #feedback { font-weight: bold; font-size: 1.2rem; height: 30px; text-align: center; margin: 5px 0; text-transform: uppercase; }
+        .action-area { display: flex; justify-content: center; padding-bottom: 5px; }
+        button { padding: 12px 30px; font-size: 1rem; cursor: pointer; border-radius: 8px; border: none; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; }
+        #check-btn { background: #E3000B; color: white; box-shadow: 0 4px 0 #900007; }
+        #next-btn { background: #005596; color: white; display: none; box-shadow: 0 4px 0 #002d50; }
+
+        #dance-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1500; display: none; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; background: rgba(255,213,0,0.9); }
+        #celebration-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 5000; display: none; flex-direction: column; align-items: center; justify-content: center; transition: opacity 1.5s ease; }
+        
+        #dance-gif, #celebration-gif { max-width: 85%; max-height: 75%; border: 10px solid white; box-shadow: 0 0 50px rgba(0,0,0,0.5); }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th { background: #005596; padding: 12px; text-align: left; color: white; }
+        td { padding: 10px; border-bottom: 1px solid #ddd; }
+
+        #audio-unlock-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: #E3000B; color: white; z-index: 3000; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+        .card { background: #fff; color: #333; padding: 40px; border-radius: 15px; border: 8px solid #FFD500; width: 360px; }
+        #settings-modal { display: none; position: absolute; background: white; color: #333; padding: 20px; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 3500; width: 300px; border: 4px solid #005596; }
+    </style>
+</head>
+<body>
+
+    <a href="index.html" id="home-link" title="Back to Menu">🏠</a>
+
+    <div id="audio-unlock-overlay">
+        <div class="card">
+            <h1 style="color:#E3000B; margin-top:0;">🧱 Master Builder</h1>
+            <p>Ready to build some sentences?</p>
+            <button style="background: #005596; color: white; font-size: 1.8rem; padding: 15px 45px; width:100%;" onclick="startApp()">BUILD!</button>
+            <br>
+            <button onclick="toggleSettings()" style="background:none; border:2px solid #666; color:#666; margin-top:15px; padding:8px 20px; font-size:0.8rem;">⚙ Session Settings</button>
+        </div>
+        <div id="settings-modal">
+            <h3>Session Settings</h3>
+            <div style="display:flex; justify-content:space-between; font-weight:bold;">
+                <span>Trials:</span><span id="trial-count-val">15</span>
+            </div>
+            <input type="range" id="trial-slider" min="5" max="20" step="5" value="15" oninput="updateTrialText(this.value)" style="width:100%; margin:10px 0;">
+            <div style="display:flex; justify-content:space-between; font-weight:bold;">
+                <span>Foils:</span><span id="foil-val">2</span>
+            </div>
+            <input type="range" id="foil-slider" min="0" max="3" value="2" oninput="updateFoilText(this.value)" style="width:100%; margin:10px 0;">
+            <button onclick="toggleSettings()" style="background:#E3000B; color:white; width:100%; margin-top:10px;">Save</button>
+        </div>
+    </div>
+
+    <div id="dance-overlay" onclick="nextTrial()">
+        <h2 style="color:#E3000B; font-size: 2rem; margin-bottom: 10px;">AWESOME!</h2>
+        <img id="dance-gif" src="" alt="Lego Reward" draggable="false">
+    </div>
+
+    <div id="celebration-overlay">
+        <h1 style="color:#005596; font-size: 3rem;">BRICK-TASTIC!</h1>
+        <img id="celebration-gif" src="images/lego_celebration.gif" alt="Celebration!" draggable="false">
+    </div>
+
+    <div id="game-container">
+        <div id="progress-container">
+            <div class="score-display">Builders Score: <span id="score-val">0</span></div>
+        </div>
+        <div id="main-content">
+            <div id="gif-container"><img id="trial-gif" src="" alt="Loading..." draggable="false"></div>
+            <div id="workspace">
+                <div id="drop-zone"></div>
+                <div class="bank" id="word-bank"></div>
+                <div id="feedback"></div>
+                <div class="action-area">
+                    <button id="check-btn" onclick="checkAnswer()">Check Build</button>
+                    <button id="next-btn" onclick="nextTrial()">Next Trial &rarr;</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="result-screen" class="hidden">
+        <div style="text-align:center; padding: 10px;">
+            <h1 style="color: #005596;">Build Summary</h1>
+            <div style="font-size: 3rem; color: #E3000B; font-weight:bold;" id="final-pct">0%</div>
+        </div>
+        <div style="flex-grow: 1; overflow-y: auto; padding: 0 20px;">
+            <table>
+                <thead>
+                    <tr><th>Trial</th><th>Target Sentence</th><th>Result</th></tr>
+                </thead>
+                <tbody id="log-body"></tbody>
+            </table>
+        </div>
+        <button onclick="location.reload()" style="background:#FFD500; color:#333; margin:20px auto; display:block;">Build Again</button>
+    </div>
+
+    <script>
+        let numFoils = 2;
+        let totalTrialsRequested = 15;
+        let sessionTrials = [];
+        
+        const sounds = { 
+            drop: new Audio('sounds/drop.mp3'), 
+            incorrect: new Audio('sounds/incorrect_answer.mp3'), 
+            celebration: new Audio('sounds/everything-is-awesome.mp3'), 
+            batman: new Audio('sounds/lego-batman.mp3'), 
+            airport: new Audio('sounds/lego-airport.mp3'), 
+            downtown: new Audio('sounds/lego-downtown.mp3'), 
+            success: new Audio('sounds/lego-success.mp3'),
+            sneeze: new Audio('sounds/lego-sneeze.mp3')
+        };
+
+        const rewardGifs = [
+            'images/lego_one.gif', 'images/lego_two.gif', 'images/lego_three.gif', 
+            'images/lego_four.gif', 'images/lego_five.gif', 'images/lego_six.gif', 
+            'images/lego_seven.gif', 'images/lego_eight.gif'
+        ];
+
+        const trialsData = [
+             { gif: "images/dog_smelling.gif", correctWho: "The dog", whoImg: "symbols/dog.png", correctDoing: "is smelling", doingImg: "symbols/smell.png" },
+             { gif: "images/girl_running.gif", correctWho: "The girl", whoImg: "symbols/girl.png", correctDoing: "is running", doingImg: "symbols/run.png" },
+             { gif: "images/cat_jumping.gif", correctWho: "The cat", whoImg: "symbols/cat.png", correctDoing: "is jumping", doingImg: "symbols/jump.png" },
+             { gif: "images/boy_eating.gif", correctWho: "The boy", whoImg: "symbols/boy.png", correctDoing: "is eating", doingImg: "symbols/eat.png" },
+             { gif: "images/baby_crying.gif", correctWho: "The baby", whoImg: "symbols/baby.png", correctDoing: "is crying", doingImg: "symbols/cry.png" },
+             { gif: "images/bird_flying.gif", correctWho: "The bird", whoImg: "symbols/bird.png", correctDoing: "is flying", doingImg: "symbols/fly.png" },
+             { gif: "images/fish_looking.gif", correctWho: "The fish", whoImg: "symbols/fish.png", correctDoing: "is looking", doingImg: "symbols/look.png" },
+             { gif: "images/man_cutting.gif", correctWho: "The man", whoImg: "symbols/man.png", correctDoing: "is cutting", doingImg: "symbols/cut.png" },
+             { gif: "images/man_washing.gif", correctWho: "The man", whoImg: "symbols/man.png", correctDoing: "is washing", doingImg: "symbols/wash.png" },
+             { gif: "images/girl_reading.gif", correctWho: "The girl", whoImg: "symbols/girl.png", correctDoing: "is reading", doingImg: "symbols/read.png" },
+             { gif: "images/woman_watching.gif", correctWho: "The woman", whoImg: "symbols/woman.png", correctDoing: "is watching", doingImg: "symbols/watch.png" },
+             { gif: "images/raccoon_walking.gif", correctWho: "The raccoon", whoImg: "symbols/raccoon.png", correctDoing: "is walking", doingImg: "symbols/walk.png" },
+             { gif: "images/dog_drinking.gif", correctWho: "The dog", whoImg: "symbols/dog.png", correctDoing: "is drinking", doingImg: "symbols/drink.png" },
+             { gif: "images/man_jumping.gif", correctWho: "The man", whoImg: "symbols/man.png", correctDoing: "is jumping", doingImg: "symbols/jump.png" },
+             { gif: "images/cat_running.gif", correctWho: "The cat", whoImg: "symbols/cat.png", correctDoing: "is running", doingImg: "symbols/run.png" }
+        ];
+
+        let currentIndex = 0, score = 0, trialLog = [], activeSound = null, danceFader = null;
+
+        function toggleSettings() { const m = document.getElementById('settings-modal'); m.style.display = (m.style.display === 'block') ? 'none' : 'block'; }
+        function updateFoilText(val) { numFoils = parseInt(val); document.getElementById('foil-val').innerText = val; }
+        function updateTrialText(val) { totalTrialsRequested = parseInt(val); document.getElementById('trial-count-val').innerText = val; }
+
+        function startApp() {
+            let pool = [...trialsData].sort(() => Math.random() - 0.5);
+            sessionTrials = pool.slice(0, totalTrialsRequested);
+            while (sessionTrials.length < totalTrialsRequested) { sessionTrials.push(trialsData[Math.floor(Math.random() * trialsData.length)]); }
+            sessionTrials.sort(() => Math.random() - 0.5);
+            
+            const pContainer = document.getElementById('progress-container');
+            const scoreDisplay = pContainer.querySelector('.score-display');
+            pContainer.innerHTML = "";
+            for(let i=0; i<totalTrialsRequested; i++) {
+                const node = document.createElement('div'); node.className = "progress-node"; node.id = `node-${i}`; node.innerText = i+1;
+                pContainer.appendChild(node);
+            }
+            pContainer.appendChild(scoreDisplay);
+
+            for (let key in sounds) { 
+                sounds[key].volume = 0; 
+                sounds[key].play().then(() => { sounds[key].pause(); sounds[key].currentTime = 0; sounds[key].volume = 1.0; }).catch(() => {}); 
+            }
+            document.getElementById('audio-unlock-overlay').style.display = 'none';
+            loadTrial();
+        }
+
+        function loadTrial() {
+            const nodes = document.querySelectorAll('.progress-node');
+            nodes.forEach((n, i) => { n.classList.remove('node-active'); if (i === currentIndex) n.classList.add('node-active'); });
+            
+            const trial = sessionTrials[currentIndex];
+            document.getElementById('trial-gif').src = trial.gif;
+            document.getElementById('drop-zone').innerHTML = ""; 
+            document.getElementById('feedback').innerText = "";
+            document.getElementById('check-btn').style.display = "inline-block"; 
+            document.getElementById('next-btn').style.display = "none";
+            document.getElementById('dance-overlay').style.display = "none";
+            
+            let items = [{ text: trial.correctWho, type: "who", img: trial.whoImg }, { text: trial.correctDoing, type: "doing", img: trial.doingImg }];
+            let seenTexts = new Set([trial.correctWho, trial.correctDoing]);
+            let currentImages = new Set([trial.whoImg, trial.doingImg]);
+
+            const conflicts = {
+                'symbols/woman.png': 'symbols/girl.png',
+                'symbols/girl.png': 'symbols/woman.png',
+                'symbols/man.png': 'symbols/boy.png',
+                'symbols/boy.png': 'symbols/man.png'
+            };
+            
+            let distractors = [];
+            trialsData.forEach(t => { distractors.push({text:t.correctWho, type:"who", img:t.whoImg}, {text:t.correctDoing, type:"doing", img:t.doingImg}); });
+            distractors.sort(() => Math.random() - 0.5);
+
+            let addedFoils = 0;
+            for (let candidate of distractors) {
+                if (addedFoils >= numFoils) break;
+                const hasTextConflict = seenTexts.has(candidate.text);
+                const excludedImg = conflicts[candidate.img];
+                const hasImgConflict = excludedImg && currentImages.has(excludedImg);
+                if (!hasTextConflict && !hasImgConflict) {
+                    items.push(candidate);
+                    seenTexts.add(candidate.text);
+                    currentImages.add(candidate.img);
+                    addedFoils++;
+                }
+            }
+
+            const bank = document.getElementById('word-bank'); bank.innerHTML = "";
+            items.sort(() => Math.random() - 0.5).forEach(item => {
+                const div = document.createElement('div');
+                div.className = `symbol ${item.type}`; div.draggable = true; div.dataset.text = item.text;
+                div.innerHTML = `<img src="${item.img}" draggable="false"><span>${item.text}</span>`;
+                div.onpointerdown = () => { window.speechSynthesis.cancel(); window.speechSynthesis.speak(new SpeechSynthesisUtterance(item.text)); };
+                div.addEventListener('dragstart', (e) => e.target.classList.add('dragging'));
+                div.addEventListener('dragend', (e) => { 
+                    e.target.classList.remove('dragging'); 
+                    if (e.target.parentElement.id === "drop-zone") { sounds.drop.currentTime = 0; sounds.drop.play(); } 
+                });
+                bank.appendChild(div);
+            });
+        }
+
+        const dropZone = document.getElementById('drop-zone');
+        const wordBank = document.getElementById('word-bank');
+        [dropZone, wordBank].forEach(zone => {
+            zone.addEventListener('dragover', e => e.preventDefault());
+            zone.addEventListener('drop', e => { const d = document.querySelector('.dragging'); if (d) zone.appendChild(d); });
+        });
+
+        function checkAnswer() {
+            const placed = Array.from(dropZone.children);
+            const trial = sessionTrials[currentIndex];
+            const isCorrect = (placed.length === 2) && (placed[0].dataset.text === trial.correctWho) && (placed[1].dataset.text === trial.correctDoing);
+            
+            trialLog.push({ trialNum: currentIndex + 1, targetSentence: `${trial.correctWho} ${trial.correctDoing}`, status: isCorrect ? "Pass" : "Fail" });
+            
+            if (isCorrect) {
+                document.getElementById('feedback').innerText = "Brick-tastic!"; 
+                document.getElementById('feedback').style.color = "#005596";
+                score++; 
+                document.getElementById('score-val').innerText = score; 
+                document.getElementById(`node-${currentIndex}`).classList.add('node-complete');
+                
+                const selectedGif = rewardGifs[Math.floor(Math.random() * rewardGifs.length)];
+                document.getElementById('dance-gif').src = selectedGif + "?t=" + Date.now();
+                
+                // Audio selection logic
+                if (selectedGif.includes('lego_one.gif')) {
+                    activeSound = sounds.sneeze;
+                } else if (selectedGif.includes('lego_four.gif')) {
+                    activeSound = sounds.batman;
+                } else {
+                    const pool = [sounds.airport, sounds.downtown, sounds.success];
+                    activeSound = pool[Math.floor(Math.random() * pool.length)];
+                }
+
+                const utterance = new SpeechSynthesisUtterance(placed.map(n => n.dataset.text).join(" "));
+                utterance.onend = () => {
+                    const overlay = document.getElementById('dance-overlay');
+                    overlay.style.display = "flex";
+
+                    // Sneeze sync (Plays once with 0.5s delay)
+                    if (selectedGif.includes('lego_one.gif')) {
+                        setTimeout(() => {
+                            if (activeSound && overlay.style.display !== "none") {
+                                activeSound.currentTime = 0; 
+                                activeSound.play();
+                            }
+                        }, 500);
+                    } else {
+                        activeSound.currentTime = 0; activeSound.play();
+                    }
+                    danceFader = setTimeout(() => fadeOutActiveSound(overlay), 6000);
+                };
+                window.speechSynthesis.speak(utterance);
+            } else {
+                document.getElementById('feedback').innerText = "Wrong Piece! Try Again."; 
+                document.getElementById('feedback').style.color = "#E3000B";
+                sounds.incorrect.currentTime = 0; sounds.incorrect.play();
+            }
+            document.getElementById('check-btn').style.display = "none"; 
+            document.getElementById('next-btn').style.display = "inline-block";
+        }
+
+        function fadeOutActiveSound(overlayElement) { 
+            if (!activeSound) return; 
+            let vol = 1.0; 
+            const f = setInterval(() => { 
+                if (vol > 0.1) { vol -= 0.1; activeSound.volume = vol; } 
+                else { 
+                    clearInterval(f); activeSound.pause(); activeSound.volume = 1.0; 
+                    overlayElement.style.display = "none"; 
+                } 
+            }, 150); 
+        }
+
+        function nextTrial() { 
+            window.speechSynthesis.cancel(); clearTimeout(danceFader); 
+            document.getElementById('dance-overlay').style.display = "none";
+            if (activeSound) { activeSound.pause(); activeSound = null; }
+            currentIndex++; 
+            if (currentIndex < totalTrialsRequested) loadTrial(); else showResults(); 
+        }
+
+        function showResults() {
+            document.getElementById('game-container').classList.add('hidden'); 
+            document.getElementById('result-screen').classList.remove('hidden');
+            const pct = Math.round(score / totalTrialsRequested * 100);
+            document.getElementById('final-pct').innerText = pct + "%";
+            document.getElementById('log-body').innerHTML = trialLog.map(t => `<tr><td>${t.trialNum}</td><td>${t.targetSentence}</td><td style="color:${t.status==='Pass'?'#005596':'#E3000B'}; font-weight:bold;">${t.status}</td></tr>`).join("");
+            
+            if (pct >= 80) {
+                const cOverlay = document.getElementById('celebration-overlay');
+                cOverlay.style.display = 'flex'; cOverlay.style.opacity = '1';
+                sounds.celebration.currentTime = 0; sounds.celebration.play();
+                setTimeout(() => { 
+                    cOverlay.style.opacity = '0'; 
+                    setTimeout(() => { cOverlay.style.display = 'none'; }, 1500); 
+                }, 7000);
+            }
+        }
+    </script>
+</body>
+</html>

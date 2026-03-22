@@ -26,7 +26,6 @@
 
         #game-container, #result-screen { 
             width: 100%; max-width: 1200px; 
-            /* iPad safety margin */
             height: 92vh; 
             height: calc(100dvh - 40px);
             background: #f0f0f0; 
@@ -44,12 +43,9 @@
         .score-display { margin-left: 10px; font-weight: bold; color: #005596; font-size: 1rem; text-transform: uppercase; }
 
         #main-content { display: flex; flex-direction: row; gap: 12px; flex-grow: 1; min-height: 0; }
-        
-        /* ADJUSTED: Reduced GIF container priority to give symbols more room */
         #gif-container { flex: 1.1; background: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; border: 4px solid #005596; overflow: hidden; }
         #trial-gif { max-width: 100%; max-height: 100%; object-fit: contain; }
         
-        /* ADJUSTED: Increased Workspace priority */
         #workspace { flex: 1.1; display: flex; flex-direction: column; gap: 6px; min-width: 350px; min-height: 0; }
         #drop-zone { flex-shrink: 0; display: flex; gap: 12px; padding: 15px 10px 10px 10px; background: #fff; border: 4px dashed #E3000B; min-height: 115px; border-radius: 8px; justify-content: center; align-items: center; }
         
@@ -63,66 +59,45 @@
             padding: 5px; 
             background: #e0e0e0; 
             border-radius: 8px; 
-            overflow: hidden; /* Hide scrollbars unless strictly necessary */
+            overflow: hidden; 
         }
         
-        /* LEGO BRICK SYMBOLS */
+        /* LEGO BRICK SYMBOLS (Standard/Laptop) */
         .symbol { 
-            position: relative;
-            flex-shrink: 0;
-            padding: 5px; 
-            border-radius: 6px; 
-            cursor: grab; 
-            font-weight: bold; 
-            /* ADJUSTED: Reduced width to fit 5 symbols in one row */
-            width: 90px; 
-            height: 88px; 
-            font-size: 0.75rem; 
-            box-shadow: 0 5px 0 rgba(0,0,0,0.2); 
-            text-align: center; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: space-between; 
-            box-sizing: border-box; 
-            background: #fff; 
-            transition: transform 0.1s;
+            position: relative; flex-shrink: 0; padding: 5px; border-radius: 6px; cursor: grab; font-weight: bold; 
+            width: 90px; height: 88px; font-size: 0.75rem; 
+            box-shadow: 0 5px 0 rgba(0,0,0,0.2); text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: space-between; box-sizing: border-box; background: #fff; transition: transform 0.1s;
         }
         .symbol:active { transform: translateY(2px); }
         .symbol img { width: 45px; height: 45px; object-fit: contain; }
 
-        .symbol::before {
-            content: "";
-            position: absolute;
-            top: -10px;
-            left: 10px;
-            right: 10px;
-            height: 10px;
-            background-repeat: repeat-x;
-            background-size: 22px 10px;
+        /* IPAD / TABLET OPTIMIZATIONS */
+        @media (min-width: 768px) and (max-width: 1024px) {
+            #gif-container { flex: 0.7; }
+            #workspace { flex: 1.3; }
+            .symbol { width: 110px; height: 105px; font-size: 0.9rem; }
+            .symbol img { width: 60px; height: 60px; }
+            .bank { gap: 12px; }
         }
 
+        .symbol::before {
+            content: ""; position: absolute; top: -10px; left: 10px; right: 10px; height: 10px; background-repeat: repeat-x; background-size: 22px 10px;
+        }
         .who { border: 4px solid #FFD500; } 
         .who::before { background-image: radial-gradient(circle, #FFD500 80%, transparent 81%); }
-
         .doing { border: 4px solid #005596; } 
         .doing::before { background-image: radial-gradient(circle, #005596 80%, transparent 81%); }
 
         .dragging { opacity: 0.3; }
-
         #feedback { font-weight: bold; font-size: 1.1rem; height: 25px; text-align: center; margin: 2px 0; text-transform: uppercase; }
         .action-area { display: flex; justify-content: center; padding-bottom: 5px; flex-shrink: 0; }
         button { padding: 10px 25px; font-size: 0.9rem; cursor: pointer; border-radius: 8px; border: none; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; }
         #check-btn { background: #E3000B; color: white; box-shadow: 0 4px 0 #900007; }
         #next-btn { background: #005596; color: white; display: none; box-shadow: 0 4px 0 #002d50; }
 
-        /* Reward and Settings Modals */
         #dance-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1500; display: none; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; background: rgba(255,213,0,0.9); }
         #celebration-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 5000; display: none; flex-direction: column; align-items: center; justify-content: center; transition: opacity 1.5s ease; }
         #dance-gif, #celebration-gif { max-width: 85%; max-height: 75%; border: 10px solid white; box-shadow: 0 0 50px rgba(0,0,0,0.5); }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th { background: #005596; padding: 12px; text-align: left; color: white; }
-        td { padding: 10px; border-bottom: 1px solid #ddd; }
         #audio-unlock-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: #E3000B; color: white; z-index: 3000; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
         .card { background: #fff; color: #333; padding: 40px; border-radius: 15px; border: 8px solid #FFD500; width: 360px; }
         #settings-modal { display: none; position: absolute; background: white; color: #333; padding: 20px; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 3500; width: 300px; border: 4px solid #005596; }
@@ -188,7 +163,7 @@
             <div style="font-size: 3rem; color: #E3000B; font-weight:bold;" id="final-pct">0%</div>
         </div>
         <div style="flex-grow: 1; overflow-y: auto; padding: 0 20px;">
-            <table>
+            <table id="log-table">
                 <thead>
                     <tr><th>Trial</th><th>Target Sentence</th><th>Result</th></tr>
                 </thead>
@@ -245,6 +220,10 @@
         function updateTrialText(val) { totalTrialsRequested = parseInt(val); document.getElementById('trial-count-val').innerText = val; }
 
         function startApp() {
+            // PRIME SPEECH FOR iOS
+            const prime = new SpeechSynthesisUtterance("");
+            window.speechSynthesis.speak(prime);
+
             let pool = [...trialsData].sort(() => Math.random() - 0.5);
             sessionTrials = pool.slice(0, totalTrialsRequested);
             while (sessionTrials.length < totalTrialsRequested) { sessionTrials.push(trialsData[Math.floor(Math.random() * trialsData.length)]); }
@@ -283,12 +262,7 @@
             let seenTexts = new Set([trial.correctWho, trial.correctDoing]);
             let currentImages = new Set([trial.whoImg, trial.doingImg]);
 
-            const conflicts = {
-                'symbols/woman.png': 'symbols/girl.png',
-                'symbols/girl.png': 'symbols/woman.png',
-                'symbols/man.png': 'symbols/boy.png',
-                'symbols/boy.png': 'symbols/man.png'
-            };
+            const conflicts = { 'symbols/woman.png': 'symbols/girl.png', 'symbols/girl.png': 'symbols/woman.png', 'symbols/man.png': 'symbols/boy.png', 'symbols/boy.png': 'symbols/man.png' };
             
             let distractors = [];
             trialsData.forEach(t => { distractors.push({text:t.correctWho, type:"who", img:t.whoImg}, {text:t.correctDoing, type:"doing", img:t.doingImg}); });
@@ -297,14 +271,8 @@
             let addedFoils = 0;
             for (let candidate of distractors) {
                 if (addedFoils >= numFoils) break;
-                const hasTextConflict = seenTexts.has(candidate.text);
-                const excludedImg = conflicts[candidate.img];
-                const hasImgConflict = excludedImg && currentImages.has(excludedImg);
-                if (!hasTextConflict && !hasImgConflict) {
-                    items.push(candidate);
-                    seenTexts.add(candidate.text);
-                    currentImages.add(candidate.img);
-                    addedFoils++;
+                if (!seenTexts.has(candidate.text) && !(conflicts[candidate.img] && currentImages.has(conflicts[candidate.img]))) {
+                    items.push(candidate); seenTexts.add(candidate.text); currentImages.add(candidate.img); addedFoils++;
                 }
             }
 
@@ -313,7 +281,13 @@
                 const div = document.createElement('div');
                 div.className = `symbol ${item.type}`; div.draggable = true; div.dataset.text = item.text;
                 div.innerHTML = `<img src="${item.img}" draggable="false"><span>${item.text}</span>`;
-                div.onpointerdown = () => { window.speechSynthesis.cancel(); window.speechSynthesis.speak(new SpeechSynthesisUtterance(item.text)); };
+                
+                // AUDIO FIX: Use mousedown to work with DragDropTouch polyfill on iOS
+                div.addEventListener('mousedown', () => {
+                    window.speechSynthesis.cancel();
+                    window.speechSynthesis.speak(new SpeechSynthesisUtterance(item.text));
+                });
+
                 div.addEventListener('dragstart', (e) => e.target.classList.add('dragging'));
                 div.addEventListener('dragend', (e) => { 
                     e.target.classList.remove('dragging'); 
@@ -347,32 +321,15 @@
                 const selectedGif = rewardGifs[Math.floor(Math.random() * rewardGifs.length)];
                 document.getElementById('dance-gif').src = selectedGif + "?t=" + Date.now();
                 
-                // Audio selection logic
-                if (selectedGif.includes('lego_one.gif')) {
-                    activeSound = sounds.sneeze;
-                } else if (selectedGif.includes('lego_four.gif')) {
-                    activeSound = sounds.batman;
-                } else {
-                    const pool = [sounds.airport, sounds.downtown, sounds.success];
-                    activeSound = pool[Math.floor(Math.random() * pool.length)];
-                }
+                if (selectedGif.includes('lego_one.gif')) activeSound = sounds.sneeze;
+                else if (selectedGif.includes('lego_four.gif')) activeSound = sounds.batman;
+                else activeSound = [sounds.airport, sounds.downtown, sounds.success][Math.floor(Math.random() * 3)];
 
                 const utterance = new SpeechSynthesisUtterance(placed.map(n => n.dataset.text).join(" "));
                 utterance.onend = () => {
-                    const overlay = document.getElementById('dance-overlay');
-                    overlay.style.display = "flex";
-
-                    // Sneeze sync
-                    if (selectedGif.includes('lego_one.gif')) {
-                        setTimeout(() => {
-                            if (activeSound && overlay.style.display !== "none") {
-                                activeSound.currentTime = 0; 
-                                activeSound.play();
-                            }
-                        }, 500);
-                    } else {
-                        activeSound.currentTime = 0; activeSound.play();
-                    }
+                    const overlay = document.getElementById('dance-overlay'); overlay.style.display = "flex";
+                    if (selectedGif.includes('lego_one.gif')) setTimeout(() => { if (activeSound && overlay.style.display !== "none") activeSound.play(); }, 500);
+                    else activeSound.play();
                     danceFader = setTimeout(() => fadeOutActiveSound(overlay), 6000);
                 };
                 window.speechSynthesis.speak(utterance);
@@ -381,8 +338,7 @@
                 document.getElementById('feedback').style.color = "#E3000B";
                 sounds.incorrect.currentTime = 0; sounds.incorrect.play();
             }
-            document.getElementById('check-btn').style.display = "none"; 
-            document.getElementById('next-btn').style.display = "inline-block";
+            document.getElementById('check-btn').style.display = "none"; document.getElementById('next-btn').style.display = "inline-block";
         }
 
         function fadeOutActiveSound(overlayElement) { 
@@ -390,10 +346,7 @@
             let vol = 1.0; 
             const f = setInterval(() => { 
                 if (vol > 0.1) { vol -= 0.1; activeSound.volume = vol; } 
-                else { 
-                    clearInterval(f); activeSound.pause(); activeSound.volume = 1.0; 
-                    overlayElement.style.display = "none"; 
-                } 
+                else { clearInterval(f); activeSound.pause(); activeSound.volume = 1.0; overlayElement.style.display = "none"; } 
             }, 150); 
         }
 
@@ -401,8 +354,7 @@
             window.speechSynthesis.cancel(); clearTimeout(danceFader); 
             document.getElementById('dance-overlay').style.display = "none";
             if (activeSound) { activeSound.pause(); activeSound = null; }
-            currentIndex++; 
-            if (currentIndex < totalTrialsRequested) loadTrial(); else showResults(); 
+            currentIndex++; if (currentIndex < totalTrialsRequested) loadTrial(); else showResults(); 
         }
 
         function showResults() {
@@ -411,15 +363,11 @@
             const pct = Math.round(score / totalTrialsRequested * 100);
             document.getElementById('final-pct').innerText = pct + "%";
             document.getElementById('log-body').innerHTML = trialLog.map(t => `<tr><td>${t.trialNum}</td><td>${t.targetSentence}</td><td style="color:${t.status==='Pass'?'#005596':'#E3000B'}; font-weight:bold;">${t.status}</td></tr>`).join("");
-            
             if (pct >= 80) {
                 const cOverlay = document.getElementById('celebration-overlay');
                 cOverlay.style.display = 'flex'; cOverlay.style.opacity = '1';
                 sounds.celebration.currentTime = 0; sounds.celebration.play();
-                setTimeout(() => { 
-                    cOverlay.style.opacity = '0'; 
-                    setTimeout(() => { cOverlay.style.display = 'none'; }, 1500); 
-                }, 7000);
+                setTimeout(() => { cOverlay.style.opacity = '0'; setTimeout(() => { cOverlay.style.display = 'none'; }, 1500); }, 7000);
             }
         }
     </script>

@@ -7,7 +7,7 @@
     <style>
         /* Lego Primary Palette */
         html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; background: #005596; font-family: 'Segoe UI', Arial, sans-serif; touch-action: none; }
-        body { display: flex; align-items: center; justify-content: center; padding: 5px; box-sizing: border-box; }
+        body { display: flex; align-items: center; justify-content: center; padding: 10px; box-sizing: border-box; }
         
         /* Prevent selection */
         body, #game-container, .symbol, .bank, #drop-zone, #workspace {
@@ -25,40 +25,60 @@
         #home-link:hover { transform: scale(1.1); }
 
         #game-container, #result-screen { 
-            width: 100%; max-width: 1200px; height: 98vh; background: #f0f0f0; 
-            padding: 15px; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); 
+            width: 100%; max-width: 1200px; 
+            /* iPad safety margin */
+            height: 92vh; 
+            height: calc(100dvh - 40px);
+            background: #f0f0f0; 
+            padding: 12px; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); 
             display: flex; flex-direction: column; box-sizing: border-box; 
             position: relative; overflow: hidden; border: 8px solid #FFD500;
         }
 
         .hidden { display: none !important; }
 
-        #progress-container { display: flex; align-items: center; justify-content: center; gap: 5px; margin-bottom: 10px; background: #fff; padding: 10px; border-radius: 0; border-bottom: 4px solid #E3000B; flex-shrink: 0; flex-wrap: wrap; }
+        #progress-container { display: flex; align-items: center; justify-content: center; gap: 5px; margin-bottom: 8px; background: #fff; padding: 8px; border-radius: 0; border-bottom: 4px solid #E3000B; flex-shrink: 0; flex-wrap: wrap; }
         .progress-node { width: 22px; height: 22px; background: #ccc; border: 2px solid #999; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: bold; color: #666; }
         .node-active { border-color: #005596; background: #fff; box-shadow: 0 0 8px rgba(0, 85, 150, 0.5); transform: scale(1.1); color: #005596; }
         .node-complete { background: #E3000B; border-color: #900007; color: white; }
         .score-display { margin-left: 10px; font-weight: bold; color: #005596; font-size: 1rem; text-transform: uppercase; }
 
-        #main-content { display: flex; flex-direction: row; gap: 15px; flex-grow: 1; min-height: 0; }
-        #gif-container { flex: 1.2; background: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; border: 4px solid #005596; overflow: hidden; }
+        #main-content { display: flex; flex-direction: row; gap: 12px; flex-grow: 1; min-height: 0; }
+        
+        /* ADJUSTED: Reduced GIF container priority to give symbols more room */
+        #gif-container { flex: 1.1; background: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; border: 4px solid #005596; overflow: hidden; }
         #trial-gif { max-width: 100%; max-height: 100%; object-fit: contain; }
         
-        #workspace { flex: 1; display: flex; flex-direction: column; gap: 8px; min-width: 300px; }
-        #drop-zone { flex-shrink: 0; display: flex; gap: 15px; padding: 20px 10px 10px 10px; background: #fff; border: 4px dashed #E3000B; min-height: 130px; border-radius: 8px; justify-content: center; align-items: center; }
-        .bank { flex-grow: 1; display: flex; gap: 15px; justify-content: center; align-content: center; flex-wrap: wrap; padding: 25px 10px 10px 10px; background: #e0e0e0; border-radius: 8px; overflow-y: auto; }
+        /* ADJUSTED: Increased Workspace priority */
+        #workspace { flex: 1.1; display: flex; flex-direction: column; gap: 6px; min-width: 350px; min-height: 0; }
+        #drop-zone { flex-shrink: 0; display: flex; gap: 12px; padding: 15px 10px 10px 10px; background: #fff; border: 4px dashed #E3000B; min-height: 115px; border-radius: 8px; justify-content: center; align-items: center; }
+        
+        .bank { 
+            flex-grow: 1; 
+            display: flex; 
+            gap: 8px; 
+            justify-content: center; 
+            align-items: center; 
+            flex-wrap: nowrap; 
+            padding: 5px; 
+            background: #e0e0e0; 
+            border-radius: 8px; 
+            overflow: hidden; /* Hide scrollbars unless strictly necessary */
+        }
         
         /* LEGO BRICK SYMBOLS */
         .symbol { 
-            position: relative; /* Needed for studs */
-            margin-top: 10px;   /* Room for studs to show */
+            position: relative;
+            flex-shrink: 0;
             padding: 5px; 
             border-radius: 6px; 
             cursor: grab; 
             font-weight: bold; 
-            width: 110px; 
-            height: 105px; 
-            font-size: 0.85rem; 
-            box-shadow: 0 6px 0 rgba(0,0,0,0.2); 
+            /* ADJUSTED: Reduced width to fit 5 symbols in one row */
+            width: 90px; 
+            height: 88px; 
+            font-size: 0.75rem; 
+            box-shadow: 0 5px 0 rgba(0,0,0,0.2); 
             text-align: center; 
             display: flex; 
             flex-direction: column; 
@@ -69,43 +89,40 @@
             transition: transform 0.1s;
         }
         .symbol:active { transform: translateY(2px); }
-        .symbol img { width: 60px; height: 60px; object-fit: contain; }
+        .symbol img { width: 45px; height: 45px; object-fit: contain; }
 
-        /* The Lego Studs (Circles on top) */
         .symbol::before {
             content: "";
             position: absolute;
-            top: -12px;
-            left: 12px;
-            right: 12px;
-            height: 12px;
+            top: -10px;
+            left: 10px;
+            right: 10px;
+            height: 10px;
             background-repeat: repeat-x;
-            background-size: 30px 12px;
+            background-size: 22px 10px;
         }
 
-        .who { border: 5px solid #FFD500; } 
+        .who { border: 4px solid #FFD500; } 
         .who::before { background-image: radial-gradient(circle, #FFD500 80%, transparent 81%); }
 
-        .doing { border: 5px solid #005596; } 
+        .doing { border: 4px solid #005596; } 
         .doing::before { background-image: radial-gradient(circle, #005596 80%, transparent 81%); }
 
         .dragging { opacity: 0.3; }
 
-        #feedback { font-weight: bold; font-size: 1.2rem; height: 30px; text-align: center; margin: 5px 0; text-transform: uppercase; }
-        .action-area { display: flex; justify-content: center; padding-bottom: 5px; }
-        button { padding: 12px 30px; font-size: 1rem; cursor: pointer; border-radius: 8px; border: none; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; }
+        #feedback { font-weight: bold; font-size: 1.1rem; height: 25px; text-align: center; margin: 2px 0; text-transform: uppercase; }
+        .action-area { display: flex; justify-content: center; padding-bottom: 5px; flex-shrink: 0; }
+        button { padding: 10px 25px; font-size: 0.9rem; cursor: pointer; border-radius: 8px; border: none; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; }
         #check-btn { background: #E3000B; color: white; box-shadow: 0 4px 0 #900007; }
         #next-btn { background: #005596; color: white; display: none; box-shadow: 0 4px 0 #002d50; }
 
+        /* Reward and Settings Modals */
         #dance-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1500; display: none; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; background: rgba(255,213,0,0.9); }
         #celebration-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 5000; display: none; flex-direction: column; align-items: center; justify-content: center; transition: opacity 1.5s ease; }
-        
         #dance-gif, #celebration-gif { max-width: 85%; max-height: 75%; border: 10px solid white; box-shadow: 0 0 50px rgba(0,0,0,0.5); }
-
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         th { background: #005596; padding: 12px; text-align: left; color: white; }
         td { padding: 10px; border-bottom: 1px solid #ddd; }
-
         #audio-unlock-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: #E3000B; color: white; z-index: 3000; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
         .card { background: #fff; color: #333; padding: 40px; border-radius: 15px; border: 8px solid #FFD500; width: 360px; }
         #settings-modal { display: none; position: absolute; background: white; color: #333; padding: 20px; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 3500; width: 300px; border: 4px solid #005596; }
@@ -345,7 +362,7 @@
                     const overlay = document.getElementById('dance-overlay');
                     overlay.style.display = "flex";
 
-                    // Sneeze sync (Plays once with 0.5s delay)
+                    // Sneeze sync
                     if (selectedGif.includes('lego_one.gif')) {
                         setTimeout(() => {
                             if (activeSound && overlay.style.display !== "none") {

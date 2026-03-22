@@ -226,6 +226,15 @@
             
             let items = [{ text: trial.correctWho, type: "who", img: trial.whoImg }, { text: trial.correctDoing, type: "doing", img: trial.doingImg }];
             let seenTexts = new Set([trial.correctWho, trial.correctDoing]);
+            let currentImages = new Set([trial.whoImg, trial.doingImg]);
+
+            // Visual conflict mapping to prevent similar symbols from appearing together
+            const conflicts = {
+                'symbols/woman.png': 'symbols/girl.png',
+                'symbols/girl.png': 'symbols/woman.png',
+                'symbols/man.png': 'symbols/boy.png',
+                'symbols/boy.png': 'symbols/man.png'
+            };
             
             let distractorPool = [];
             trialsData.forEach((t) => {
@@ -237,9 +246,16 @@
             let addedFoils = 0;
             for (let candidate of distractorPool) {
                 if (addedFoils >= numFoils) break;
-                if (!seenTexts.has(candidate.text)) {
+                
+                const hasTextConflict = seenTexts.has(candidate.text);
+                const excludedImg = conflicts[candidate.img];
+                // Check if the visually similar counterpart is already present
+                const hasImgConflict = excludedImg && currentImages.has(excludedImg);
+
+                if (!hasTextConflict && !hasImgConflict) {
                     items.push(candidate);
                     seenTexts.add(candidate.text);
+                    currentImages.add(candidate.img);
                     addedFoils++;
                 }
             }

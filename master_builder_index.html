@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>AAC Noun + Verb - Lego Edition</title>
+    <script src="aac-audio.js"></script>
     <script src="https://bernardo-castilho.github.io/DragDropTouch/DragDropTouch.js"></script>
     <style>
         /* Lego Primary Palette */
@@ -184,14 +185,14 @@
         let sessionTrials = [];
         
         const sounds = { 
-            drop: new Audio('sounds/drop.mp3'), 
-            incorrect: new Audio('sounds/incorrect_answer.mp3'), 
-            celebration: new Audio('sounds/everything-is-awesome.mp3'), 
-            batman: new Audio('sounds/lego-batman.mp3'), 
-            airport: new Audio('sounds/lego-airport.mp3'), 
-            downtown: new Audio('sounds/lego-downtown.mp3'), 
-            success: new Audio('sounds/lego-success.mp3'),
-            sneeze: new Audio('sounds/lego-sneeze.mp3')
+            drop: AACAudio.sound('sounds/drop.mp3'), 
+            incorrect: AACAudio.sound('sounds/incorrect_answer.mp3'), 
+            celebration: AACAudio.sound('sounds/everything-is-awesome.mp3'), 
+            batman: AACAudio.sound('sounds/lego-batman.mp3'), 
+            airport: AACAudio.sound('sounds/lego-airport.mp3'), 
+            downtown: AACAudio.sound('sounds/lego-downtown.mp3'), 
+            success: AACAudio.sound('sounds/lego-success.mp3'),
+            sneeze: AACAudio.sound('sounds/lego-sneeze.mp3')
         };
 
         const rewardGifs = [
@@ -225,10 +226,6 @@
         function updateTrialText(val) { totalTrialsRequested = parseInt(val); document.getElementById('trial-count-val').innerText = val; }
 
         function startApp() {
-            // PRIME SPEECH FOR iOS
-            const prime = new SpeechSynthesisUtterance("");
-            window.speechSynthesis.speak(prime);
-
             let pool = [...trialsData].sort(() => Math.random() - 0.5);
             sessionTrials = pool.slice(0, totalTrialsRequested);
             while (sessionTrials.length < totalTrialsRequested) { sessionTrials.push(trialsData[Math.floor(Math.random() * trialsData.length)]); }
@@ -243,10 +240,8 @@
             }
             pContainer.appendChild(scoreDisplay);
 
-            for (let key in sounds) { 
-                sounds[key].volume = 0; 
-                sounds[key].play().then(() => { sounds[key].pause(); sounds[key].currentTime = 0; sounds[key].volume = 1.0; }).catch(() => {}); 
-            }
+            // Unlock Web Audio + prime speech inside this tap (see aac-audio.js)
+            AACAudio.unlock();
             document.getElementById('audio-unlock-overlay').style.display = 'none';
             loadTrial();
         }
@@ -288,10 +283,7 @@
                 div.innerHTML = `<img src="${item.img}" draggable="false"><span>${item.text}</span>`;
                 
                 // AUDIO FIX: Use mousedown to work with DragDropTouch polyfill on iOS
-                div.addEventListener('mousedown', () => {
-                    window.speechSynthesis.cancel();
-                    window.speechSynthesis.speak(new SpeechSynthesisUtterance(item.text));
-                });
+                div.addEventListener('mousedown', () => { AACAudio.speak(item.text); });
 
                 div.addEventListener('dragstart', (e) => e.target.classList.add('dragging'));
                 div.addEventListener('dragend', (e) => { 
@@ -330,33 +322,43 @@
                 else if (selectedGif.includes('lego_four.gif')) activeSound = sounds.batman;
                 else activeSound = [sounds.airport, sounds.downtown, sounds.success][Math.floor(Math.random() * 3)];
 
-                const utterance = new SpeechSynthesisUtterance(placed.map(n => n.dataset.text).join(" "));
-                utterance.onend = () => {
+                // Start the music AFTER speech finishes (the helper guarantees this callback runs)
+                AACAudio.speak(placed.map(n => n.dataset.text).join(" "), () => {
                     const overlay = document.getElementById('dance-overlay'); overlay.style.display = "flex";
                     if (selectedGif.includes('lego_one.gif')) setTimeout(() => { if (activeSound && overlay.style.display !== "none") activeSound.play(); }, 500);
                     else activeSound.play();
                     danceFader = setTimeout(() => fadeOutActiveSound(overlay), 6000);
-                };
-                window.speechSynthesis.speak(utterance);
+                });
             } else {
                 document.getElementById('feedback').innerText = "Wrong Piece! Try Again."; 
                 document.getElementById('feedback').style.color = "#E3000B";
-                sounds.incorrect.currentTime = 0; sounds.incorrect.play();
+                AACAudio.cancelSpeech(); sounds.incorrect.play();
             }
             document.getElementById('check-btn').style.display = "none"; document.getElementById('next-btn').style.display = "inline-block";
         }
 
-        function fadeOutActiveSound(overlayElement) { 
-            if (!activeSound) return; 
-            let vol = 1.0; 
-            const f = setInterval(() => { 
-                if (vol > 0.1) { vol -= 0.1; activeSound.volume = vol; } 
-                else { clearInterval(f); activeSound.pause(); activeSound.volume = 1.0; overlayElement.style.display = "none"; } 
-            }, 150); 
+        let fadeInterval = null;
+        function fadeOutActiveSound(overlayElement) {
+            if (!activeSound) return;
+            const snd = activeSound;          // remember WHICH sound we are fading
+            let vol = 1.0;
+            clearInterval(fadeInterval);
+            fadeInterval = setInterval(() => {
+                if (vol > 0.1) {
+                    vol -= 0.1;
+                    snd.volume = vol;
+                } else {
+                    clearInterval(fadeInterval);
+                    fadeInterval = null;
+                    snd.pause();
+                    if (activeSound === snd) activeSound = null;
+                    overlayElement.style.display = "none";
+                }
+            }, 150);
         }
 
         function nextTrial() { 
-            window.speechSynthesis.cancel(); clearTimeout(danceFader); 
+            AACAudio.cancelSpeech(); clearTimeout(danceFader); clearInterval(fadeInterval); fadeInterval = null;
             document.getElementById('dance-overlay').style.display = "none";
             if (activeSound) { activeSound.pause(); activeSound = null; }
             currentIndex++; if (currentIndex < totalTrialsRequested) loadTrial(); else showResults(); 

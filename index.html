@@ -2,46 +2,105 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
     <title>AAC Activity Hub</title>
+
+    <!-- "Add to Home Screen" on iPad: opens full-screen, without Safari's toolbar -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="AAC Hub">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="theme-color" content="#eaf4fd">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+
+    <!-- Warm the cache so each activity starts faster -->
+    <link rel="prefetch" href="aac-audio.js">
+    <link rel="prefetch" href="aac-drag.js">
+
     <style>
+        html {
+            background: #eaf4fd; /* matches the middle of the gradient, shown while overscrolling */
+            -webkit-text-size-adjust: 100%;
+        }
         body {
-            background: #f0f2f5;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            /* soft pastel wash: green -> blue -> yellow, the same order as the three cards */
+            background: linear-gradient(135deg, #e8f5e9 0%, #eaf4fd 50%, #fff9db 100%);
+            /* ui-rounded gives Safari on iPad a friendly rounded look; Segoe UI etc. are fallbacks for other devices */
+            font-family: ui-rounded, "SF Pro Rounded", system-ui, -apple-system, "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100vh;
+            min-height: 100vh;   /* fallback */
+            min-height: 100dvh;  /* accounts for Safari's collapsing toolbar */
             margin: 0;
+            box-sizing: border-box;
+            /* keep content clear of the iPad's rounded corners / home indicator */
+            padding: max(24px, env(safe-area-inset-top)) max(24px, env(safe-area-inset-right))
+                     max(24px, env(safe-area-inset-bottom)) max(24px, env(safe-area-inset-left));
+            -webkit-tap-highlight-color: transparent;
         }
-        h1 { color: #2c3e50; margin-bottom: 40px; font-size: 2.5rem; }
+        h1 {
+            color: #2c3e50;
+            margin: 0 0 40px;
+            font-size: clamp(1.9rem, 5vw, 2.5rem);
+            text-align: center;
+        }
+
+        /* Flex + wrap keeps a lone last card centered in portrait (a grid would leave it at the left) */
         .menu-container { display: flex; gap: 30px; flex-wrap: wrap; justify-content: center; }
+
         .card {
-            width: 280px;
+            /* per-theme colors are set below via these variables */
+            --accent: #a5d6a7;
+            --tint: #f1f8e9;
+            --ink: #2c3e50;
+            --glow: rgba(76, 175, 80, 0.28);
+
+            width: min(280px, 100%);
+            box-sizing: border-box;
             padding: 25px;
-            background: white;
+            background: linear-gradient(180deg, #ffffff 0%, var(--tint) 100%);
             border-radius: 30px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 25px var(--glow);
             text-align: center;
             cursor: pointer;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             text-decoration: none;
             color: inherit;
-            border: 6px solid transparent;
+            border: 6px solid var(--accent);
             display: flex;
             flex-direction: column;
             align-items: center;
-        }
-        .card:hover { transform: translateY(-15px); box-shadow: 0 20px 40px rgba(0,0,0,0.15); }
-        
-        /* Theme Borders */
-        .ac-card { border-color: #a5d6a7; }
-        .funky-card { border-color: #3498db; }
-        .lego-card { border-color: #FFD500; }
 
-        .card img { width: 180px; height: 180px; border-radius: 20px; object-fit: cover; margin-bottom: 20px; border: 4px solid #eee; }
-        .card h2 { margin: 10px 0; color: #2c3e50; }
-        .card p { color: #636e72; font-size: 0.95rem; line-height: 1.4; }
+            touch-action: manipulation;        /* no double-tap-zoom delay */
+            -webkit-touch-callout: none;       /* no link-preview popup on long press */
+        }
+
+        /* Lift only for real hover (mouse/trackpad). On touch screens :hover can stay "stuck" after a tap. */
+        @media (hover: hover) {
+            .card:hover { transform: translateY(-15px); box-shadow: 0 20px 40px var(--glow); }
+        }
+        /* Quick press-down feedback for fingers */
+        .card:active { transform: scale(0.97); transition-duration: 0.1s; }
+
+        /* Themes */
+        .ac-card    { --accent: #a5d6a7; --tint: #e8f5e9; --ink: #2e7d32; --glow: rgba(76, 175, 80, 0.30); }
+        .funky-card { --accent: #3498db; --tint: #e3f1fc; --ink: #1f6fa8; --glow: rgba(52, 152, 219, 0.30); }
+        .lego-card  { --accent: #FFD500; --tint: #fff6c2; --ink: #7a5f00; --glow: rgba(230, 190, 0, 0.35); }
+
+        .card img {
+            width: 180px;
+            height: 180px;
+            max-width: 100%;
+            border-radius: 20px;
+            object-fit: cover;
+            margin-bottom: 20px;
+            border: 4px solid var(--accent);
+            background: #fff;
+        }
+        .card h2 { margin: 10px 0; color: var(--ink); }
+        .card p { color: #636e72; font-size: 0.95rem; line-height: 1.4; margin: 0; }
     </style>
 </head>
 <body>
@@ -50,19 +109,19 @@
 
     <div class="menu-container">
         <a href="index_animal_crossing3.html" class="card ac-card">
-            <img src="images/kk_celebration.gif" alt="Animal Crossing">
+            <img src="images/kk_celebration.gif" alt="Animal Crossing" width="180" height="180" draggable="false">
             <h2>🍃 Island Session</h2>
             <p>Relaxing Animal Crossing vibes, K.K. Slider music, and village friends.</p>
         </a>
 
         <a href="index_dance_party.html" class="card funky-card">
-            <img src="images/dancing_cartoon.gif" alt="Funky Music">
+            <img src="images/dancing_cartoon.gif" alt="Funky Music" width="180" height="180" draggable="false">
             <h2>🕺 Dance Party</h2>
             <p>High energy, funky beats, and party animations with colorful themes!</p>
         </a>
 
         <a href="master_builder_index.html" class="card lego-card">
-            <img src="images/lego_celebration.gif" alt="Lego Master Builder">
+            <img src="images/lego_celebration.gif" alt="Lego Master Builder" width="180" height="180" draggable="false">
             <h2>🧱 Master Builder</h2>
             <p>Build sentences brick-by-brick in a bright, colorful Lego world!</p>
         </a>

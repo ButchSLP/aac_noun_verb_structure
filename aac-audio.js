@@ -243,8 +243,11 @@
                 s.start(0);
             } catch (e) {}
             // Decode sounds one at a time (small ones first) to keep memory spikes low.
+            // (small pause between files so decoding never hogs the CPU while a student is dragging)
             registry.reduce(function (chain, s) {
-                return chain.then(function () { return s.load(); });
+                return chain
+                    .then(function () { return s.load(); })
+                    .then(function () { return new Promise(function (r) { setTimeout(r, 250); }); });
             }, Promise.resolve());
         }
 

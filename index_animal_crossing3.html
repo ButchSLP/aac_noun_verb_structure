@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>AAC Noun + Verb - Animal Crossing Edition</title>
+    <script src="aac-audio.js"></script>
     <script src="https://bernardo-castilho.github.io/DragDropTouch/DragDropTouch.js"></script>
     <style>
         /* Animal Crossing Palette */
@@ -155,12 +156,12 @@
         let totalTrialsRequested = 15;
         let sessionTrials = [];
         const sounds = { 
-            drop: new Audio('sounds/drop.mp3'), 
-            incorrect: new Audio('sounds/incorrect_answer.mp3'), 
-            celebration: new Audio('sounds/animal_crossing_celebration.mp3'), 
-            ac1: new Audio('sounds/animal_cross_song_one.mp3'), 
-            ac2: new Audio('sounds/animal_cross_song_two.mp3'), 
-            ac3: new Audio('sounds/animal_cross_song_three.mp3') 
+            drop: AACAudio.sound('sounds/drop.mp3'), 
+            incorrect: AACAudio.sound('sounds/incorrect_answer.mp3'), 
+            celebration: AACAudio.sound('sounds/animal_crossing_celebration.mp3'), 
+            ac1: AACAudio.sound('sounds/animal_cross_song_one.mp3'), 
+            ac2: AACAudio.sound('sounds/animal_cross_song_two.mp3'), 
+            ac3: AACAudio.sound('sounds/animal_cross_song_three.mp3') 
         };
         const danceGifs = ['images/animal_crossing_one.webp', 'images/animal_crossing_two.webp', 'images/animal_crossing_three.webp', 'images/animal_crossing_four.webp', 'images/animal_crossing_five.webp'];
         const rewardKeys = ['ac1', 'ac2', 'ac3'];
@@ -203,17 +204,13 @@
                 pContainer.appendChild(node);
             }
             pContainer.appendChild(scoreDisplay);
-            for (let key in sounds) { sounds[key].volume = 0; sounds[key].play().then(() => { sounds[key].pause(); sounds[key].currentTime = 0; sounds[key].volume = 1.0; }).catch(() => {}); }
-            window.speechSynthesis.cancel(); window.speechSynthesis.speak(new SpeechSynthesisUtterance(" "));
+            // Unlock Web Audio + prime speech inside this tap (see aac-audio.js)
+            AACAudio.unlock();
             document.getElementById('audio-unlock-overlay').style.display = 'none';
             loadTrial();
         }
 
-        function speak(text, callback) {
-            window.speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); const id = globalTrialId;
-            if (callback) u.onend = () => { if (id === globalTrialId) callback(); };
-            window.speechSynthesis.speak(u);
-        }
+        function speak(text, callback) { AACAudio.speak(text, callback); }
 
         function loadTrial() {
             const nodes = document.querySelectorAll('.progress-node');
@@ -300,15 +297,34 @@
                 });
             } else {
                 document.getElementById('feedback').innerText = "✘ Try again!"; document.getElementById('feedback').style.color = "#e74c3c";
-                sounds.incorrect.currentTime = 0; sounds.incorrect.play();
+                AACAudio.cancelSpeech(); sounds.incorrect.play();
             }
             document.getElementById('check-btn').style.display = "none"; document.getElementById('next-btn').style.display = "inline-block";
         }
 
-        function fadeOutActiveSound(overlayElement) { if (!activeSound) return; let vol = 1.0; const f = setInterval(() => { if (vol > 0.1) { vol -= 0.1; activeSound.volume = vol; } else { clearInterval(f); activeSound.pause(); overlayElement.style.display = "none"; overlayElement.classList.remove('funky-pulse'); } }, 150); }
+        let fadeInterval = null;
+        function fadeOutActiveSound(overlayElement) {
+            if (!activeSound) return;
+            const snd = activeSound;          // remember WHICH sound we are fading
+            let vol = 1.0;
+            clearInterval(fadeInterval);
+            fadeInterval = setInterval(() => {
+                if (vol > 0.1) {
+                    vol -= 0.1;
+                    snd.volume = vol;
+                } else {
+                    clearInterval(fadeInterval);
+                    fadeInterval = null;
+                    snd.pause();
+                    if (activeSound === snd) activeSound = null;
+                    overlayElement.style.display = "none";
+                    overlayElement.classList.remove('funky-pulse');
+                }
+            }, 150);
+        }
 
         function nextTrial() { 
-            globalTrialId++; window.speechSynthesis.cancel(); clearTimeout(danceFader); document.getElementById('dance-overlay').style.display = "none";
+            globalTrialId++; AACAudio.cancelSpeech(); clearTimeout(danceFader); clearInterval(fadeInterval); fadeInterval = null; document.getElementById('dance-overlay').style.display = "none";
             if (activeSound) { activeSound.pause(); activeSound = null; }
             currentIndex++; if (currentIndex < totalTrialsRequested) loadTrial(); else showResults(); 
         }

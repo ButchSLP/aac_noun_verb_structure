@@ -2,9 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
     <title>AAC Noun + Verb - Lego Edition</title>
     <script src="aac-audio.js"></script>
-    <script src="https://bernardo-castilho.github.io/DragDropTouch/DragDropTouch.js"></script>
+    <script src="aac-drag.js"></script>
     <style>
         /* Lego Primary Palette */
         html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; background: #005596; font-family: 'Segoe UI', Arial, sans-serif; touch-action: none; }
@@ -242,6 +243,8 @@
 
             // Unlock Web Audio + prime speech inside this tap (see aac-audio.js)
             AACAudio.unlock();
+            // Warm the image cache (all tiles) so dragging never waits on a first-time image decode
+            AACDrag.preload(trialsData.flatMap(t => [t.whoImg, t.doingImg]));
             document.getElementById('audio-unlock-overlay').style.display = 'none';
             loadTrial();
         }
@@ -252,6 +255,7 @@
             
             const trial = sessionTrials[currentIndex];
             document.getElementById('trial-gif').src = trial.gif;
+            AACDrag.preload(sessionTrials[currentIndex + 1] ? [sessionTrials[currentIndex + 1].gif] : []);  // prefetch next GIF
             document.getElementById('drop-zone').innerHTML = ""; 
             document.getElementById('feedback').innerText = "";
             document.getElementById('check-btn').style.display = "inline-block"; 
@@ -276,29 +280,25 @@
                 }
             }
 
-            const bank = document.getElementById('word-bank'); bank.innerHTML = "";
+            const bank = document.getElementById('word-bank'); AACDrag.cancel(); bank.innerHTML = "";
             items.sort(() => Math.random() - 0.5).forEach(item => {
                 const div = document.createElement('div');
-                div.className = `symbol ${item.type}`; div.draggable = true; div.dataset.text = item.text;
+                div.className = `symbol ${item.type}`; div.dataset.text = item.text;
                 div.innerHTML = `<img src="${item.img}" draggable="false"><span>${item.text}</span>`;
                 
-                // AUDIO FIX: Use mousedown to work with DragDropTouch polyfill on iOS
-                div.addEventListener('mousedown', () => { AACAudio.speak(item.text); });
-
-                div.addEventListener('dragstart', (e) => e.target.classList.add('dragging'));
-                div.addEventListener('dragend', (e) => { 
-                    e.target.classList.remove('dragging'); 
-                    if (e.target.parentElement.id === "drop-zone") { sounds.drop.currentTime = 0; sounds.drop.play(); } 
-                });
+                // Speak slightly AFTER touch-down so the speech engine never stalls the start of a drag
+                div.addEventListener('pointerdown', () => setTimeout(() => AACAudio.speak(item.text), 40));
+                AACDrag.attach(div);
                 bank.appendChild(div);
             });
         }
 
         const dropZone = document.getElementById('drop-zone');
         const wordBank = document.getElementById('word-bank');
-        [dropZone, wordBank].forEach(zone => {
-            zone.addEventListener('dragover', e => e.preventDefault());
-            zone.addEventListener('drop', e => { const d = document.querySelector('.dragging'); if (d) zone.appendChild(d); });
+        AACDrag.setup({
+            zones: [dropZone, wordBank],
+            // runs the instant a tile is released, BEFORE it moves, so the sound starts with minimal delay
+            onDrop: (item, zone) => { if (zone === dropZone) sounds.drop.play(); }
         });
 
         function checkAnswer() {

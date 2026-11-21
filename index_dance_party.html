@@ -2,9 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
     <title>AAC Noun + Verb - Classic Size & Unique Symbols</title>
     <script src="aac-audio.js"></script>
-    <script src="https://bernardo-castilho.github.io/DragDropTouch/DragDropTouch.js"></script>
+    <script src="aac-drag.js"></script>
     <style>
         html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; background: #f0f2f5; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; touch-action: none; }
         body { display: flex; align-items: center; justify-content: center; padding: 5px; box-sizing: border-box; }
@@ -28,7 +29,7 @@
         #home-link:hover { transform: scale(1.1); }
 
         #game-container, #result-screen { 
-            width: 100%; max-width: 1200px; height: 98vh; background: white; 
+            width: 100%; max-width: 1200px; height: 98vh; height: 98dvh; background: white; 
             padding: 15px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
             display: flex; flex-direction: column; box-sizing: border-box; 
             position: relative; overflow: hidden; 
@@ -224,6 +225,8 @@
 
             // Unlock Web Audio + prime speech inside this tap (see aac-audio.js)
             AACAudio.unlock();
+            // Warm the image cache (all tiles) so dragging never waits on a first-time image decode
+            AACDrag.preload(trialsData.flatMap(t => [t.whoImg, t.doingImg]));
 
             document.getElementById('audio-unlock-overlay').style.display = 'none';
             loadTrial();
@@ -239,6 +242,7 @@
             });
             const trial = sessionTrials[currentIndex];
             document.getElementById('trial-gif').src = trial.gif;
+            AACDrag.preload(sessionTrials[currentIndex + 1] ? [sessionTrials[currentIndex + 1].gif] : []);  // prefetch next GIF
             document.getElementById('drop-zone').innerHTML = "";
             document.getElementById('feedback').innerText = "";
             document.getElementById('check-btn').style.display = "inline-block";
@@ -282,34 +286,25 @@
             }
 
             const bank = document.getElementById('word-bank');
-            bank.innerHTML = "";
+            AACDrag.cancel(); bank.innerHTML = "";
             items.sort(() => Math.random() - 0.5).forEach(item => {
                 const div = document.createElement('div');
                 div.className = `symbol ${item.type}`;
-                div.draggable = true;
                 div.dataset.text = item.text;
                 div.innerHTML = `<img src="${item.img}" draggable="false"><span draggable="false">${item.text}</span>`;
-                div.onpointerdown = function () { speak(item.text); };
-                div.addEventListener('dragstart', (e) => e.target.classList.add('dragging'));
-                div.addEventListener('dragend', (e) => {
-                    e.target.classList.remove('dragging');
-                    if (e.target.parentElement.id === "drop-zone") {
-                        sounds.drop.currentTime = 0;
-                        sounds.drop.play().catch(() => {});
-                    }
-                });
+                // Speak slightly AFTER touch-down so the speech engine never stalls the start of a drag
+                div.addEventListener('pointerdown', () => setTimeout(() => speak(item.text), 40));
+                AACDrag.attach(div);
                 bank.appendChild(div);
             });
         }
 
         const dropZone = document.getElementById('drop-zone');
         const wordBank = document.getElementById('word-bank');
-        [dropZone, wordBank].forEach(zone => {
-            zone.addEventListener('dragover', e => e.preventDefault());
-            zone.addEventListener('drop', e => {
-                const d = document.querySelector('.dragging');
-                if (d) zone.appendChild(d);
-            });
+        AACDrag.setup({
+            zones: [dropZone, wordBank],
+            // runs the instant a tile is released, BEFORE it moves, so the sound starts with minimal delay
+            onDrop: (item, zone) => { if (zone === dropZone) sounds.drop.play(); }
         });
 
         function checkAnswer() {

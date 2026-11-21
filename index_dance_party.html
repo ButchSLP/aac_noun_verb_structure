@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>AAC Noun + Verb - Classic Size & Unique Symbols</title>
+    <script src="aac-audio.js"></script>
     <script src="https://bernardo-castilho.github.io/DragDropTouch/DragDropTouch.js"></script>
     <style>
         html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; background: #f0f2f5; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; touch-action: none; }
@@ -160,12 +161,12 @@
         let totalTrialsRequested = 15;
         let sessionTrials = [];
         const sounds = {
-            drop: new Audio('sounds/drop.mp3'),
-            incorrect: new Audio('sounds/incorrect_answer.mp3'),
-            celebration: new Audio('sounds/celebration_song.mp3'),
-            funky1: new Audio('sounds/funky_one.mp3'),
-            funky2: new Audio('sounds/funky_two.mp3'),
-            funky3: new Audio('sounds/funky_three.mp3')
+            drop: AACAudio.sound('sounds/drop.mp3'),
+            incorrect: AACAudio.sound('sounds/incorrect_answer.mp3'),
+            celebration: AACAudio.sound('sounds/celebration_song.mp3'),
+            funky1: AACAudio.sound('sounds/funky_one.mp3'),
+            funky2: AACAudio.sound('sounds/funky_two.mp3'),
+            funky3: AACAudio.sound('sounds/funky_three.mp3')
         };
         const danceGifs = [
             'images/animal_dancing_one.gif',
@@ -175,7 +176,7 @@
             'images/animal_dancing_five.gif'
         ];
         const funkyKeys = ['funky1', 'funky2', 'funky3'];
-        let activeSound = null, activeUtterance = null, globalTrialId = 0, danceFader = null;
+        let activeSound = null, globalTrialId = 0, danceFader = null;
 
         const trialsData = [
             { gif: "images/dog_smelling.gif", correctWho: "The dog", whoImg: "symbols/dog.png", correctDoing: "is smelling", doingImg: "symbols/smell.png" },
@@ -221,52 +222,14 @@
             }
             pContainer.appendChild(scoreDisplay);
 
-            // Unlock all audio elements cleanly on iPadOS using .muted instead of .volume
-            for (let key in sounds) {
-                sounds[key].muted = true;
-                const p = sounds[key].play();
-                if (p !== undefined) {
-                    p.then(() => {
-                        sounds[key].pause();
-                        sounds[key].currentTime = 0;
-                        sounds[key].muted = false;
-                    }).catch(() => {
-                        sounds[key].muted = false;
-                    });
-                }
-            }
-
-            // Prime SpeechSynthesis cleanly without a space character
-            window.speechSynthesis.cancel();
-            activeUtterance = new SpeechSynthesisUtterance("");
-            window.speechSynthesis.speak(activeUtterance);
+            // Unlock Web Audio + prime speech inside this tap (see aac-audio.js)
+            AACAudio.unlock();
 
             document.getElementById('audio-unlock-overlay').style.display = 'none';
             loadTrial();
         }
 
-        function speak(text, callback) {
-            window.speechSynthesis.cancel();
-            const id = globalTrialId;
-            let finished = false;
-
-            const finish = () => {
-                if (finished || id !== globalTrialId) return;
-                finished = true;
-                if (callback) callback();
-            };
-
-            // Store globally so iOS Safari does not garbage-collect the utterance mid-speech
-            activeUtterance = new SpeechSynthesisUtterance(text);
-            activeUtterance.onend = finish;
-            activeUtterance.onerror = finish;
-            window.speechSynthesis.speak(activeUtterance);
-
-            // Fallback timer in case iPad Safari fails to fire onend
-            if (callback) {
-                setTimeout(finish, Math.max(1800, text.length * 130));
-            }
-        }
+        function speak(text, callback) { AACAudio.speak(text, callback); }
 
         function loadTrial() {
             const nodes = document.querySelectorAll('.progress-node');
@@ -331,7 +294,6 @@
                 div.addEventListener('dragend', (e) => {
                     e.target.classList.remove('dragging');
                     if (e.target.parentElement.id === "drop-zone") {
-                        sounds.drop.muted = false;
                         sounds.drop.currentTime = 0;
                         sounds.drop.play().catch(() => {});
                     }
@@ -380,7 +342,6 @@
 
                     const rand = funkyKeys[Math.floor(Math.random() * funkyKeys.length)];
                     activeSound = sounds[rand];
-                    activeSound.muted = false;
                     activeSound.volume = 1.0;
                     activeSound.currentTime = 0;
                     activeSound.play().catch(() => {});
@@ -390,8 +351,7 @@
             } else {
                 document.getElementById('feedback').innerText = "✘ Try again!";
                 document.getElementById('feedback').style.color = "#e74c3c";
-                window.speechSynthesis.cancel();
-                sounds.incorrect.muted = false;
+                AACAudio.cancelSpeech();
                 sounds.incorrect.currentTime = 0;
                 sounds.incorrect.play().catch(() => {});
             }
@@ -399,18 +359,21 @@
             document.getElementById('next-btn').style.display = "inline-block";
         }
 
+        let fadeInterval = null;
         function fadeOutActiveSound(overlayElement) {
             if (!activeSound) return;
+            const snd = activeSound;          // remember WHICH sound we are fading
             let vol = 1.0;
-            const f = setInterval(() => {
+            clearInterval(fadeInterval);
+            fadeInterval = setInterval(() => {
                 if (vol > 0.1) {
                     vol -= 0.1;
-                    activeSound.volume = vol;
+                    snd.volume = vol;
                 } else {
-                    clearInterval(f);
-                    activeSound.pause();
-                    activeSound.currentTime = 0;
-                    activeSound.volume = 1.0;
+                    clearInterval(fadeInterval);
+                    fadeInterval = null;
+                    snd.pause();
+                    if (activeSound === snd) activeSound = null;
                     overlayElement.style.display = "none";
                     overlayElement.classList.remove('funky-pulse');
                 }
@@ -419,8 +382,9 @@
 
         function nextTrial() {
             globalTrialId++;
-            window.speechSynthesis.cancel();
+            AACAudio.cancelSpeech();
             clearTimeout(danceFader);
+            clearInterval(fadeInterval); fadeInterval = null;   // a leftover fade must never touch the next trial's music
             document.getElementById('dance-overlay').style.display = "none";
             if (activeSound) {
                 activeSound.pause();
@@ -450,7 +414,6 @@
                 cOverlay.style.display = 'flex';
                 cOverlay.style.opacity = '1';
 
-                sounds.celebration.muted = false;
                 sounds.celebration.currentTime = 0;
                 sounds.celebration.play().catch(() => {});
 

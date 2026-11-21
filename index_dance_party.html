@@ -159,27 +159,40 @@
         let numFoils = 2;
         let totalTrialsRequested = 15;
         let sessionTrials = [];
-        const sounds = { drop: new Audio('sounds/drop.mp3'), incorrect: new Audio('sounds/incorrect_answer.mp3'), celebration: new Audio('sounds/celebration_song.mp3'), funky1: new Audio('sounds/funky_one.mp3'), funky2: new Audio('sounds/funky_two.mp3'), funky3: new Audio('sounds/funky_three.mp3') };
-        const danceGifs = ['images/animal_dancing_one.gif', 'images/animal_dancing_two.gif', 'images/animal_dancing_three.gif', 'images/animal_dancing_four.gif', 'images/animal_dancing_five.gif'];
+        const sounds = {
+            drop: new Audio('sounds/drop.mp3'),
+            incorrect: new Audio('sounds/incorrect_answer.mp3'),
+            celebration: new Audio('sounds/celebration_song.mp3'),
+            funky1: new Audio('sounds/funky_one.mp3'),
+            funky2: new Audio('sounds/funky_two.mp3'),
+            funky3: new Audio('sounds/funky_three.mp3')
+        };
+        const danceGifs = [
+            'images/animal_dancing_one.gif',
+            'images/animal_dancing_two.gif',
+            'images/animal_dancing_three.gif',
+            'images/animal_dancing_four.gif',
+            'images/animal_dancing_five.gif'
+        ];
         const funkyKeys = ['funky1', 'funky2', 'funky3'];
-        let activeSound = null, globalTrialId = 0, danceFader = null;
+        let activeSound = null, activeUtterance = null, globalTrialId = 0, danceFader = null;
 
         const trialsData = [
-             { gif: "images/dog_smelling.gif", correctWho: "The dog", whoImg: "symbols/dog.png", correctDoing: "is smelling", doingImg: "symbols/smell.png" },
-             { gif: "images/girl_running.gif", correctWho: "The girl", whoImg: "symbols/girl.png", correctDoing: "is running", doingImg: "symbols/run.png" },
-             { gif: "images/cat_jumping.gif", correctWho: "The cat", whoImg: "symbols/cat.png", correctDoing: "is jumping", doingImg: "symbols/jump.png" },
-             { gif: "images/boy_eating.gif", correctWho: "The boy", whoImg: "symbols/boy.png", correctDoing: "is eating", doingImg: "symbols/eat.png" },
-             { gif: "images/baby_crying.gif", correctWho: "The baby", whoImg: "symbols/baby.png", correctDoing: "is crying", doingImg: "symbols/cry.png" },
-             { gif: "images/bird_flying.gif", correctWho: "The bird", whoImg: "symbols/bird.png", correctDoing: "is flying", doingImg: "symbols/fly.png" },
-             { gif: "images/fish_looking.gif", correctWho: "The fish", whoImg: "symbols/fish.png", correctDoing: "is looking", doingImg: "symbols/look.png" },
-             { gif: "images/man_cutting.gif", correctWho: "The man", whoImg: "symbols/man.png", correctDoing: "is cutting", doingImg: "symbols/cut.png" },
-             { gif: "images/man_washing.gif", correctWho: "The man", whoImg: "symbols/man.png", correctDoing: "is washing", doingImg: "symbols/wash.png" },
-             { gif: "images/girl_reading.gif", correctWho: "The girl", whoImg: "symbols/girl.png", correctDoing: "is reading", doingImg: "symbols/read.png" },
-             { gif: "images/woman_watching.gif", correctWho: "The woman", whoImg: "symbols/woman.png", correctDoing: "is watching", doingImg: "symbols/watch.png" },
-             { gif: "images/raccoon_walking.gif", correctWho: "The raccoon", whoImg: "symbols/raccoon.png", correctDoing: "is walking", doingImg: "symbols/walk.png" },
-             { gif: "images/dog_drinking.gif", correctWho: "The dog", whoImg: "symbols/dog.png", correctDoing: "is drinking", doingImg: "symbols/drink.png" },
-             { gif: "images/man_jumping.gif", correctWho: "The man", whoImg: "symbols/man.png", correctDoing: "is jumping", doingImg: "symbols/jump.png" },
-             { gif: "images/cat_running.gif", correctWho: "The cat", whoImg: "symbols/cat.png", correctDoing: "is running", doingImg: "symbols/run.png" }
+            { gif: "images/dog_smelling.gif", correctWho: "The dog", whoImg: "symbols/dog.png", correctDoing: "is smelling", doingImg: "symbols/smell.png" },
+            { gif: "images/girl_running.gif", correctWho: "The girl", whoImg: "symbols/girl.png", correctDoing: "is running", doingImg: "symbols/run.png" },
+            { gif: "images/cat_jumping.gif", correctWho: "The cat", whoImg: "symbols/cat.png", correctDoing: "is jumping", doingImg: "symbols/jump.png" },
+            { gif: "images/boy_eating.gif", correctWho: "The boy", whoImg: "symbols/boy.png", correctDoing: "is eating", doingImg: "symbols/eat.png" },
+            { gif: "images/baby_crying.gif", correctWho: "The baby", whoImg: "symbols/baby.png", correctDoing: "is crying", doingImg: "symbols/cry.png" },
+            { gif: "images/bird_flying.gif", correctWho: "The bird", whoImg: "symbols/bird.png", correctDoing: "is flying", doingImg: "symbols/fly.png" },
+            { gif: "images/fish_looking.gif", correctWho: "The fish", whoImg: "symbols/fish.png", correctDoing: "is looking", doingImg: "symbols/look.png" },
+            { gif: "images/man_cutting.gif", correctWho: "The man", whoImg: "symbols/man.png", correctDoing: "is cutting", doingImg: "symbols/cut.png" },
+            { gif: "images/man_washing.gif", correctWho: "The man", whoImg: "symbols/man.png", correctDoing: "is washing", doingImg: "symbols/wash.png" },
+            { gif: "images/girl_reading.gif", correctWho: "The girl", whoImg: "symbols/girl.png", correctDoing: "is reading", doingImg: "symbols/read.png" },
+            { gif: "images/woman_watching.gif", correctWho: "The woman", whoImg: "symbols/woman.png", correctDoing: "is watching", doingImg: "symbols/watch.png" },
+            { gif: "images/raccoon_walking.gif", correctWho: "The raccoon", whoImg: "symbols/raccoon.png", correctDoing: "is walking", doingImg: "symbols/walk.png" },
+            { gif: "images/dog_drinking.gif", correctWho: "The dog", whoImg: "symbols/dog.png", correctDoing: "is drinking", doingImg: "symbols/drink.png" },
+            { gif: "images/man_jumping.gif", correctWho: "The man", whoImg: "symbols/man.png", correctDoing: "is jumping", doingImg: "symbols/jump.png" },
+            { gif: "images/cat_running.gif", correctWho: "The cat", whoImg: "symbols/cat.png", correctDoing: "is running", doingImg: "symbols/run.png" }
         ];
 
         let currentIndex = 0, score = 0, trialLog = [];
@@ -191,42 +204,92 @@
         function startApp() {
             let pool = [...trialsData].sort(() => Math.random() - 0.5);
             sessionTrials = pool.slice(0, totalTrialsRequested);
-            while (sessionTrials.length < totalTrialsRequested) { sessionTrials.push(trialsData[Math.floor(Math.random() * trialsData.length)]); }
+            while (sessionTrials.length < totalTrialsRequested) {
+                sessionTrials.push(trialsData[Math.floor(Math.random() * trialsData.length)]);
+            }
             sessionTrials.sort(() => Math.random() - 0.5);
+
             const pContainer = document.getElementById('progress-container');
             const scoreDisplay = pContainer.querySelector('.score-display');
             pContainer.innerHTML = "";
-            for(let i=0; i<totalTrialsRequested; i++) {
-                const node = document.createElement('div'); node.className = "progress-node"; node.id = `node-${i}`; node.innerText = i+1;
+            for (let i = 0; i < totalTrialsRequested; i++) {
+                const node = document.createElement('div');
+                node.className = "progress-node";
+                node.id = `node-${i}`;
+                node.innerText = i + 1;
                 pContainer.appendChild(node);
             }
             pContainer.appendChild(scoreDisplay);
-            for (let key in sounds) { sounds[key].volume = 0; sounds[key].play().then(() => { sounds[key].pause(); sounds[key].currentTime = 0; sounds[key].volume = 1.0; }).catch(() => {}); }
-            window.speechSynthesis.cancel(); window.speechSynthesis.speak(new SpeechSynthesisUtterance(" "));
+
+            // Unlock all audio elements cleanly on iPadOS using .muted instead of .volume
+            for (let key in sounds) {
+                sounds[key].muted = true;
+                const p = sounds[key].play();
+                if (p !== undefined) {
+                    p.then(() => {
+                        sounds[key].pause();
+                        sounds[key].currentTime = 0;
+                        sounds[key].muted = false;
+                    }).catch(() => {
+                        sounds[key].muted = false;
+                    });
+                }
+            }
+
+            // Prime SpeechSynthesis cleanly without a space character
+            window.speechSynthesis.cancel();
+            activeUtterance = new SpeechSynthesisUtterance("");
+            window.speechSynthesis.speak(activeUtterance);
+
             document.getElementById('audio-unlock-overlay').style.display = 'none';
             loadTrial();
         }
 
         function speak(text, callback) {
-            window.speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); const id = globalTrialId;
-            if (callback) u.onend = () => { if (id === globalTrialId) callback(); };
-            window.speechSynthesis.speak(u);
+            window.speechSynthesis.cancel();
+            const id = globalTrialId;
+            let finished = false;
+
+            const finish = () => {
+                if (finished || id !== globalTrialId) return;
+                finished = true;
+                if (callback) callback();
+            };
+
+            // Store globally so iOS Safari does not garbage-collect the utterance mid-speech
+            activeUtterance = new SpeechSynthesisUtterance(text);
+            activeUtterance.onend = finish;
+            activeUtterance.onerror = finish;
+            window.speechSynthesis.speak(activeUtterance);
+
+            // Fallback timer in case iPad Safari fails to fire onend
+            if (callback) {
+                setTimeout(finish, Math.max(1800, text.length * 130));
+            }
         }
 
         function loadTrial() {
             const nodes = document.querySelectorAll('.progress-node');
-            nodes.forEach((n, i) => { n.classList.remove('node-active'); if (i === currentIndex) n.classList.add('node-active'); });
+            nodes.forEach((n, i) => {
+                n.classList.remove('node-active');
+                if (i === currentIndex) n.classList.add('node-active');
+            });
             const trial = sessionTrials[currentIndex];
             document.getElementById('trial-gif').src = trial.gif;
-            document.getElementById('drop-zone').innerHTML = ""; document.getElementById('feedback').innerText = "";
-            document.getElementById('check-btn').style.display = "inline-block"; document.getElementById('next-btn').style.display = "none";
+            document.getElementById('drop-zone').innerHTML = "";
+            document.getElementById('feedback').innerText = "";
+            document.getElementById('check-btn').style.display = "inline-block";
+            document.getElementById('next-btn').style.display = "none";
             document.getElementById('dance-overlay').style.display = "none";
-            
+
             // STRICT UNIQUENESS LOGIC
-            let items = [{ text: trial.correctWho, type: "who", img: trial.whoImg }, { text: trial.correctDoing, type: "doing", img: trial.doingImg }];
+            let items = [
+                { text: trial.correctWho, type: "who", img: trial.whoImg },
+                { text: trial.correctDoing, type: "doing", img: trial.doingImg }
+            ];
             let seenTexts = new Set([trial.correctWho, trial.correctDoing]);
-            
-            const conflicts = [ ['The woman', 'The girl'], ['The man', 'The boy'] ];
+
+            const conflicts = [['The woman', 'The girl'], ['The man', 'The boy']];
             function isConflicting(text, currentItems) {
                 for (let pair of conflicts) {
                     if (pair.includes(text)) {
@@ -248,8 +311,6 @@
             let addedFoils = 0;
             for (let candidate of distractorPool) {
                 if (addedFoils >= numFoils) break;
-                // Check 1: Text is not already used in this trial
-                // Check 2: Doesn't create a "Smart Pair" conflict
                 if (!seenTexts.has(candidate.text) && !isConflicting(candidate.text, items)) {
                     items.push(candidate);
                     seenTexts.add(candidate.text);
@@ -257,61 +318,146 @@
                 }
             }
 
-            const bank = document.getElementById('word-bank'); bank.innerHTML = "";
+            const bank = document.getElementById('word-bank');
+            bank.innerHTML = "";
             items.sort(() => Math.random() - 0.5).forEach(item => {
                 const div = document.createElement('div');
-                div.className = `symbol ${item.type}`; div.draggable = true; div.dataset.text = item.text;
+                div.className = `symbol ${item.type}`;
+                div.draggable = true;
+                div.dataset.text = item.text;
                 div.innerHTML = `<img src="${item.img}" draggable="false"><span draggable="false">${item.text}</span>`;
-                div.onpointerdown = function() { speak(item.text); };
+                div.onpointerdown = function () { speak(item.text); };
                 div.addEventListener('dragstart', (e) => e.target.classList.add('dragging'));
-                div.addEventListener('dragend', (e) => { e.target.classList.remove('dragging'); if (e.target.parentElement.id === "drop-zone") { sounds.drop.currentTime = 0; sounds.drop.play(); } });
+                div.addEventListener('dragend', (e) => {
+                    e.target.classList.remove('dragging');
+                    if (e.target.parentElement.id === "drop-zone") {
+                        sounds.drop.muted = false;
+                        sounds.drop.currentTime = 0;
+                        sounds.drop.play().catch(() => {});
+                    }
+                });
                 bank.appendChild(div);
             });
         }
 
         const dropZone = document.getElementById('drop-zone');
         const wordBank = document.getElementById('word-bank');
-        [dropZone, wordBank].forEach(zone => { zone.addEventListener('dragover', e => e.preventDefault()); zone.addEventListener('drop', e => { const d = document.querySelector('.dragging'); if (d) zone.appendChild(d); }); });
+        [dropZone, wordBank].forEach(zone => {
+            zone.addEventListener('dragover', e => e.preventDefault());
+            zone.addEventListener('drop', e => {
+                const d = document.querySelector('.dragging');
+                if (d) zone.appendChild(d);
+            });
+        });
 
         function checkAnswer() {
             const placed = Array.from(dropZone.children);
             const trial = sessionTrials[currentIndex];
-            const isCorrect = (placed.length === 2) && (placed[0].dataset.text === trial.correctWho) && (placed[1].dataset.text === trial.correctDoing);
-            trialLog.push({ trialNum: currentIndex + 1, targetSentence: `${trial.correctWho} ${trial.correctDoing}`, status: isCorrect ? "Pass" : "Fail" });
+            const isCorrect = (placed.length === 2) &&
+                (placed[0].dataset.text === trial.correctWho) &&
+                (placed[1].dataset.text === trial.correctDoing);
+
+            trialLog.push({
+                trialNum: currentIndex + 1,
+                targetSentence: `${trial.correctWho} ${trial.correctDoing}`,
+                status: isCorrect ? "Pass" : "Fail"
+            });
+
             if (isCorrect) {
-                document.getElementById('feedback').innerText = "✔ Correct!"; document.getElementById('feedback').style.color = "#2ecc71";
-                score++; document.getElementById('score-val').innerText = score; document.getElementById(`node-${currentIndex}`).classList.add('node-complete');
-                const rand = funkyKeys[Math.floor(Math.random() * funkyKeys.length)]; activeSound = sounds[rand]; activeSound.volume = 0; activeSound.currentTime = 0; activeSound.play();
+                document.getElementById('feedback').innerText = "✔ Correct!";
+                document.getElementById('feedback').style.color = "#2ecc71";
+                score++;
+                document.getElementById('score-val').innerText = score;
+                document.getElementById(`node-${currentIndex}`).classList.add('node-complete');
+
+                // Start music AFTER speech finishes so iOS SpeechSynthesis doesn't interrupt it
                 speak(placed.map(n => n.dataset.text).join(" "), () => {
-                    const overlay = document.getElementById('dance-overlay'); const img = document.getElementById('dance-gif');
+                    const overlay = document.getElementById('dance-overlay');
+                    const img = document.getElementById('dance-gif');
                     img.src = danceGifs[Math.floor(Math.random() * danceGifs.length)] + "?t=" + Date.now();
-                    overlay.style.display = "flex"; overlay.classList.add('funky-pulse');
-                    activeSound.volume = 1.0; danceFader = setTimeout(() => fadeOutActiveSound(overlay), 6000);
+                    overlay.style.display = "flex";
+                    overlay.classList.add('funky-pulse');
+
+                    const rand = funkyKeys[Math.floor(Math.random() * funkyKeys.length)];
+                    activeSound = sounds[rand];
+                    activeSound.muted = false;
+                    activeSound.volume = 1.0;
+                    activeSound.currentTime = 0;
+                    activeSound.play().catch(() => {});
+
+                    danceFader = setTimeout(() => fadeOutActiveSound(overlay), 6000);
                 });
             } else {
-                document.getElementById('feedback').innerText = "✘ Try again!"; document.getElementById('feedback').style.color = "#e74c3c";
-                window.speechSynthesis.cancel(); sounds.incorrect.currentTime = 0; sounds.incorrect.play();
+                document.getElementById('feedback').innerText = "✘ Try again!";
+                document.getElementById('feedback').style.color = "#e74c3c";
+                window.speechSynthesis.cancel();
+                sounds.incorrect.muted = false;
+                sounds.incorrect.currentTime = 0;
+                sounds.incorrect.play().catch(() => {});
             }
-            document.getElementById('check-btn').style.display = "none"; document.getElementById('next-btn').style.display = "inline-block";
+            document.getElementById('check-btn').style.display = "none";
+            document.getElementById('next-btn').style.display = "inline-block";
         }
 
-        function fadeOutActiveSound(overlayElement) { if (!activeSound) return; let vol = 1.0; const f = setInterval(() => { if (vol > 0.1) { vol -= 0.1; activeSound.volume = vol; } else { clearInterval(f); activeSound.pause(); activeSound.volume = 1.0; overlayElement.style.display = "none"; overlayElement.classList.remove('funky-pulse'); } }, 150); }
+        function fadeOutActiveSound(overlayElement) {
+            if (!activeSound) return;
+            let vol = 1.0;
+            const f = setInterval(() => {
+                if (vol > 0.1) {
+                    vol -= 0.1;
+                    activeSound.volume = vol;
+                } else {
+                    clearInterval(f);
+                    activeSound.pause();
+                    activeSound.currentTime = 0;
+                    activeSound.volume = 1.0;
+                    overlayElement.style.display = "none";
+                    overlayElement.classList.remove('funky-pulse');
+                }
+            }, 150);
+        }
 
-        function nextTrial() { 
-            globalTrialId++; window.speechSynthesis.cancel(); clearTimeout(danceFader); document.getElementById('dance-overlay').style.display = "none";
-            if (activeSound) { activeSound.pause(); activeSound.currentTime = 0; activeSound.volume = 1.0; activeSound = null; }
-            currentIndex++; if (currentIndex < totalTrialsRequested) loadTrial(); else showResults(); 
+        function nextTrial() {
+            globalTrialId++;
+            window.speechSynthesis.cancel();
+            clearTimeout(danceFader);
+            document.getElementById('dance-overlay').style.display = "none";
+            if (activeSound) {
+                activeSound.pause();
+                activeSound.currentTime = 0;
+                activeSound.volume = 1.0;
+                activeSound = null;
+            }
+            currentIndex++;
+            if (currentIndex < totalTrialsRequested) loadTrial();
+            else showResults();
         }
 
         function showResults() {
-            document.getElementById('game-container').classList.add('hidden'); document.getElementById('result-screen').classList.remove('hidden');
+            document.getElementById('game-container').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
             document.getElementById('final-pct').innerText = Math.round(score / totalTrialsRequested * 100) + "%";
-            document.getElementById('log-body').innerHTML = trialLog.map(t => `<tr><td>${t.trialNum}</td><td>${t.targetSentence}</td><td style="color:${t.status==='Pass'?'#2ecc71':'#e74c3c'}; font-weight:bold;">${t.status}</td></tr>`).join("");
+            document.getElementById('log-body').innerHTML = trialLog.map(t =>
+                `<tr><td>${t.trialNum}</td><td>${t.targetSentence}</td><td style="color:${t.status === 'Pass' ? '#2ecc71' : '#e74c3c'}; font-weight:bold;">${t.status}</td></tr>`
+            ).join("");
+
             if (score / totalTrialsRequested >= 0.8) {
-                const cOverlay = document.getElementById('celebration-overlay'); const timeStr = "?t=" + Date.now();
-                document.getElementById('celebration-gif').src = "images/dancing_cartoon.gif" + timeStr; document.getElementById('result-party-left').src = "images/dancing_cartoon.gif" + timeStr; document.getElementById('result-party-right').src = "images/dancing_cartoon.gif" + timeStr;
-                cOverlay.style.display = 'flex'; cOverlay.style.opacity = '1'; sounds.celebration.currentTime = 0; sounds.celebration.play();
-                setTimeout(() => { cOverlay.style.opacity = '0'; setTimeout(() => { cOverlay.style.display = 'none'; }, 1500); }, 4000);
+                const cOverlay = document.getElementById('celebration-overlay');
+                const timeStr = "?t=" + Date.now();
+                document.getElementById('celebration-gif').src = "images/dancing_cartoon.gif" + timeStr;
+                document.getElementById('result-party-left').src = "images/dancing_cartoon.gif" + timeStr;
+                document.getElementById('result-party-right').src = "images/dancing_cartoon.gif" + timeStr;
+                cOverlay.style.display = 'flex';
+                cOverlay.style.opacity = '1';
+
+                sounds.celebration.muted = false;
+                sounds.celebration.currentTime = 0;
+                sounds.celebration.play().catch(() => {});
+
+                setTimeout(() => {
+                    cOverlay.style.opacity = '0';
+                    setTimeout(() => { cOverlay.style.display = 'none'; }, 1500);
+                }, 4000);
             }
         }
     </script>

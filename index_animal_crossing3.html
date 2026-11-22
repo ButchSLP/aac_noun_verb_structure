@@ -115,7 +115,7 @@
 
     <div id="celebration-overlay">
         <h1 style="color:#2e7d32; font-size: 3rem; margin-bottom:10px;">FANTASTIC!</h1>
-        <img id="celebration-gif" src="images/kk_celebration.gif" alt="Celebration!" draggable="false">
+        <img id="celebration-gif" src="images/kk_celebration.webp" alt="Celebration!" draggable="false">
     </div>
 
     <div id="game-container">
@@ -169,21 +169,21 @@
         let activeSound = null, globalTrialId = 0, danceFader = null;
 
         const trialsData = [
-             { gif: "images/dog_smelling.gif", correctWho: "The dog", whoImg: "symbols/dog.png", correctDoing: "is smelling", doingImg: "symbols/smell.png" },
-             { gif: "images/girl_running.gif", correctWho: "The girl", whoImg: "symbols/girl.png", correctDoing: "is running", doingImg: "symbols/run.png" },
-             { gif: "images/cat_jumping.gif", correctWho: "The cat", whoImg: "symbols/cat.png", correctDoing: "is jumping", doingImg: "symbols/jump.png" },
-             { gif: "images/boy_eating.gif", correctWho: "The boy", whoImg: "symbols/boy.png", correctDoing: "is eating", doingImg: "symbols/eat.png" },
-             { gif: "images/baby_crying.gif", correctWho: "The baby", whoImg: "symbols/baby.png", correctDoing: "is crying", doingImg: "symbols/cry.png" },
-             { gif: "images/bird_flying.gif", correctWho: "The bird", whoImg: "symbols/bird.png", correctDoing: "is flying", doingImg: "symbols/fly.png" },
-             { gif: "images/fish_looking.gif", correctWho: "The fish", whoImg: "symbols/fish.png", correctDoing: "is looking", doingImg: "symbols/look.png" },
-             { gif: "images/man_cutting.gif", correctWho: "The man", whoImg: "symbols/man.png", correctDoing: "is cutting", doingImg: "symbols/cut.png" },
-             { gif: "images/man_washing.gif", correctWho: "The man", whoImg: "symbols/man.png", correctDoing: "is washing", doingImg: "symbols/wash.png" },
-             { gif: "images/girl_reading.gif", correctWho: "The girl", whoImg: "symbols/girl.png", correctDoing: "is reading", doingImg: "symbols/read.png" },
-             { gif: "images/woman_watching.gif", correctWho: "The woman", whoImg: "symbols/woman.png", correctDoing: "is watching", doingImg: "symbols/watch.png" },
-             { gif: "images/raccoon_walking.gif", correctWho: "The raccoon", whoImg: "symbols/raccoon.png", correctDoing: "is walking", doingImg: "symbols/walk.png" },
-             { gif: "images/dog_drinking.gif", correctWho: "The dog", whoImg: "symbols/dog.png", correctDoing: "is drinking", doingImg: "symbols/drink.png" },
-             { gif: "images/man_jumping.gif", correctWho: "The man", whoImg: "symbols/man.png", correctDoing: "is jumping", doingImg: "symbols/jump.png" },
-             { gif: "images/cat_running.gif", correctWho: "The cat", whoImg: "symbols/cat.png", correctDoing: "is running", doingImg: "symbols/run.png" }
+             { gif: "images/dog_smelling.webp", correctWho: "The dog", whoImg: "symbols/dog.png", correctDoing: "is smelling", doingImg: "symbols/smell.png" },
+             { gif: "images/girl_running.webp", correctWho: "The girl", whoImg: "symbols/girl.png", correctDoing: "is running", doingImg: "symbols/run.png" },
+             { gif: "images/cat_jumping.webp", correctWho: "The cat", whoImg: "symbols/cat.png", correctDoing: "is jumping", doingImg: "symbols/jump.png" },
+             { gif: "images/boy_eating.webp", correctWho: "The boy", whoImg: "symbols/boy.png", correctDoing: "is eating", doingImg: "symbols/eat.png" },
+             { gif: "images/baby_crying.webp", correctWho: "The baby", whoImg: "symbols/baby.png", correctDoing: "is crying", doingImg: "symbols/cry.png" },
+             { gif: "images/bird_flying.webp", correctWho: "The bird", whoImg: "symbols/bird.png", correctDoing: "is flying", doingImg: "symbols/fly.png" },
+             { gif: "images/fish_looking.webp", correctWho: "The fish", whoImg: "symbols/fish.png", correctDoing: "is looking", doingImg: "symbols/look.png" },
+             { gif: "images/man_cutting.webp", correctWho: "The man", whoImg: "symbols/man.png", correctDoing: "is cutting", doingImg: "symbols/cut.png" },
+             { gif: "images/man_washing.webp", correctWho: "The man", whoImg: "symbols/man.png", correctDoing: "is washing", doingImg: "symbols/wash.png" },
+             { gif: "images/girl_reading.webp", correctWho: "The girl", whoImg: "symbols/girl.png", correctDoing: "is reading", doingImg: "symbols/read.png" },
+             { gif: "images/woman_watching.webp", correctWho: "The woman", whoImg: "symbols/woman.png", correctDoing: "is watching", doingImg: "symbols/watch.png" },
+             { gif: "images/raccoon_walking.webp", correctWho: "The raccoon", whoImg: "symbols/raccoon.png", correctDoing: "is walking", doingImg: "symbols/walk.png" },
+             { gif: "images/dog_drinking.webp", correctWho: "The dog", whoImg: "symbols/dog.png", correctDoing: "is drinking", doingImg: "symbols/drink.png" },
+             { gif: "images/man_jumping.webp", correctWho: "The man", whoImg: "symbols/man.png", correctDoing: "is jumping", doingImg: "symbols/jump.png" },
+             { gif: "images/cat_running.webp", correctWho: "The cat", whoImg: "symbols/cat.png", correctDoing: "is running", doingImg: "symbols/run.png" }
         ];
 
         let currentIndex = 0, score = 0, trialLog = [];

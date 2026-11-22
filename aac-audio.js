@@ -36,7 +36,9 @@
     function ensureContext() {
         if (!AC) return null;
         if (!ctx) {
-            try { ctx = new AC(); } catch (e) { ctx = null; }
+            // "interactive" asks for the smallest output delay (matters for the short drop sound)
+            try { ctx = new AC({ latencyHint: 'interactive' }); }
+            catch (e) { try { ctx = new AC(); } catch (e2) { ctx = null; } }
         }
         return ctx;
     }
@@ -60,11 +62,51 @@
     }
 
     // Every touch re-resumes the context, so it recovers on its own during a session.
-    ['pointerdown', 'touchstart', 'touchend', 'mousedown', 'click', 'keydown'].forEach(function (ev) {
+    ['pointerdown', 'pointerup', 'touchstart', 'touchend', 'mousedown', 'click', 'keydown'].forEach(function (ev) {
         document.addEventListener(ev, resume, { capture: true, passive: true });
     });
     document.addEventListener('visibilitychange', function () { if (!document.hidden) resume(); });
     window.addEventListener('pageshow', resume);
+
+    // iOS lets the audio hardware go to sleep when nothing has played for a few seconds. The
+    // first sound after that is then delayed or its first moments are clipped -- which ruins a
+    // very short sound like the drop "click". A looping, inaudible buffer keeps it awake.
+    let keepAlive = null;
+    function startKeepAlive() {
+        if (!ctx || keepAlive) return;
+        try {
+            const len = Math.max(1, Math.floor(ctx.sampleRate));
+            const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+            const data = buf.getChannelData(0);
+            for (let i = 0; i < len; i++) data[i] = (Math.random() * 2 - 1) * 0.00005; // ~ inaudible dither level
+            const src = ctx.createBufferSource();
+            src.buffer = buf;
+            src.loop = true;
+            src.connect(ctx.destination);
+            src.start(0);
+            keepAlive = src;
+        } catch (e) {}
+    }
+
+    // Many mp3s start with a little silence (encoder padding, or baked into the clip). For a drop
+    // sound that is heard as the sound arriving late. Find where the sound really begins so play()
+    // can skip straight to it. Only short clips are trimmed (never songs), and never more than 0.5 s.
+    function leadingSilence(buf) {
+        try {
+            if (buf.duration > 3) return 0;
+            const limit = Math.min(buf.length, Math.floor(buf.sampleRate * 0.5));
+            const threshold = 0.01;                       // about -40 dB
+            let first = limit;
+            for (let c = 0; c < buf.numberOfChannels; c++) {
+                const d = buf.getChannelData(c);
+                for (let i = 0; i < first; i++) {
+                    if (Math.abs(d[i]) > threshold) { first = i; break; }
+                }
+            }
+            if (first >= limit) return 0;                 // nothing found: don't trim
+            return Math.max(0, first / buf.sampleRate - 0.003);
+        } catch (e) { return 0; }
+    }
 
     class AACSound {
         constructor(url) {
@@ -77,6 +119,8 @@
             this._token = 0;
             this._el = null; // HTMLAudio fallback (only used if Web Audio can't load the file)
             this.gain = null;
+            this.offset = 0;       // seconds of leading silence to skip (short clips only)
+            this.lastState = '-';  // AudioContext state at the most recent play() (shown in debug badge)
             registry.push(this);
         }
 
@@ -110,7 +154,7 @@
                         if (p && p.catch) p.catch(reject);
                     });
                 })
-                .then(function (decoded) { self.buffer = decoded; })
+                .then(function (decoded) { self.buffer = decoded; self.offset = leadingSilence(decoded); })
                 .catch(function (err) {
                     console.warn('[aac-audio] could not load ' + self.url + ' (using fallback):', err);
                     self.failed = true;
@@ -122,6 +166,7 @@
             const token = ++this._token;
             this._stopNow();
             this._volume = 1; // every play starts at full volume (fade-outs reset cleanly)
+            this.lastState = ctx ? ctx.state : 'no ctx';
             if (!ctx || this.failed) return this._playElement();
             ensureRunning();
             const self = this;
@@ -138,7 +183,7 @@
                     src.onended = function () { if (self.source === src) self.source = null; };
                     self.source = src;
                     self.gain = g;
-                    src.start(0);
+                    src.start(0, self.offset || 0);
                     ensureRunning();
                 } catch (e) {
                     console.warn('[aac-audio] play failed, using fallback:', e);
@@ -235,6 +280,7 @@
 
         if (ctx && !unlocked) {
             unlocked = true;
+            startKeepAlive();
             try { // inaudible blip inside the tap -- fully unlocks the context on iOS
                 const b = ctx.createBuffer(1, 1, 22050);
                 const s = ctx.createBufferSource();
@@ -279,7 +325,9 @@
             setInterval(function () {
                 el.textContent = 'audio: ' + (ctx ? ctx.state : 'not started') + '\n' +
                     registry.map(function (s) {
-                        return (s.buffer ? '\u2713' : s.failed ? '\u2717 (fallback)' : '\u2026') + ' ' + s.url.split('/').pop();
+                        return (s.buffer ? '\u2713' : s.failed ? '\u2717 (fallback)' : '\u2026') + ' ' + s.url.split('/').pop() +
+                            (s.buffer && s.offset ? ' trim ' + Math.round(s.offset * 1000) + 'ms' : '') +
+                            (s.lastState !== '-' ? ' last:' + s.lastState : '');
                     }).join('\n');
             }, 500);
         });

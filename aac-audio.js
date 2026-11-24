@@ -12,7 +12,7 @@
  * works at any time -- no tap required.
  *
  * USAGE
- *   const sounds = { drop: AACAudio.sound('sounds/drop.mp3'), ... };
+ *   const sounds = { drop: AACAudio.sound('sounds/drop.wav'), ... };
  *   AACAudio.unlock();                 // call inside the START button handler
  *   sounds.drop.play();                // returns a Promise, never throws
  *   sounds.song.volume = 0.5;          // works live (used for fade-outs)
